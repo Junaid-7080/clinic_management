@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #1A1B1E;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: left;
+            padding: 12px;
+        }
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        td {
+            background-color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        .action-buttons {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>User Details</h1>
+
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Active</th>
+            <th>Staff</th>
+            <th>Role</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+        </tr>
+        <tr>
+            <td>{{ main.username }}</td>
+            <td>{{ main.email }}</td>
+            <td>{{ main.is_active|yesno:"Yes,No" }}</td>
+            <td>{{ main.is_staff|yesno:"Yes,No" }}</td>
+            <td>{{ main.get_role_display }}</td>
+            <td>{{ main.created_at }}</td>
+            <td>{{ main.updated_at }}</td>
+        </tr>
+    </table>
+
+    <div class="action-buttons">
+        <button type="button" class="btn btn-success" onclick="location.href='{% url 'approve' main.id %}'">Approve</button>
+        <button type="button" class="btn btn-danger" onclick="location.href='{% url 'remove' main.id %}'">Reject</button>
+    </div>
+
+</body>
+</html>

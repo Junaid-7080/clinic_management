@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Management System</title>
+    <link rel="stylesheet">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #005f73;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.navbar nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+}
+
+#hero {
+    background-color: #94d2bd;
+    color: #002d3c;
+    padding: 50px;
+    text-align: center;
+}
+
+.cta-button {
+    background-color: #ee9b00;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+#about, #services, #contact {
+    padding: 20px;
+    text-align: center;
+}
+
+.service-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.service-card {
+    background-color: #e9d8a6;
+    padding: 15px;
+    margin: 10px;
+    width: 250px;
+    border-radius: 5px;
+}
+
+footer {
+    background-color: #005f73;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: relative;
+}
+
+    </style>
+
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <h1>HealthPlus Clinic</h1>
+            <nav>
+                <a href="#about">About</a>
+                <a href="#services">Services</a>
+                <a href="#contact">Contact</a>
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <section id="hero">
+        <div class="hero-content">
+            <h2>Your Health, Our Priority</h2>
+            <p>Efficient and patient-centered clinic management for doctors, receptionists, and patients.</p>
+            <a href="{% url 'register' %}" class="cta-button">Get Started</a>
+        </div>
+    </section>
+
+    <section id="about">
+        <h3>About Us</h3>
+        <p>HealthPlus Clinic offers top-tier healthcare services with a user-friendly management system. Our platform streamlines the healthcare process, making appointments, consultations, and patient record management easier for everyone.</p>
+    </section>
+
+    <section id="services">
+        <h3>Our Services</h3>
+        <div class="service-cards">
+            <div class="service-card">
+                <h4>Doctor Consultation</h4>
+                <p>Schedule and manage consultations with our experienced medical professionals.</p>
+            </div>
+            <div class="service-card">
+                <h4>Patient Registration</h4>
+                <p>Quick and secure registration for new patients with unique ID generation.</p>
+            </div>
+            <div class="service-card">
+                <h4>Appointment Booking</h4>
+                <p>Book appointments with ease, managed by our dedicated receptionists.</p>
+            </div>
+            <div class="service-card">
+                <h4>Prescription Management</h4>
+                <p>Access your prescriptions and medical records with a few clicks.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h3>Contact Us</h3>
+        <p>For inquiries, please contact us at:</p>
+        <p>Email: info@healthplusclinic.com | Phone: +1 (234) 567-8900</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 HealthPlus Clinic. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

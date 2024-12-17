@@ -1,0 +1,163 @@
+{% extends 'recep_base.html' %}
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctors List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            background-size: cover;
+            background-image: url(https://th.bing.com/th/id/R.261195e9273354b1f677b2c7254ec8e3?rik=Me9X7zfv1uQPVQ&riu=http%3a%2f%2fyesofcorsa.com%2fwp-content%2fuploads%2f2017%2f05%2fHospital-Best-Wallpaper.jpg&ehk=ia%2fu6w%2bCTtaPvNph8v26DLDiEgD7C2DabhfdPFKGqoE%3d&risl=1&pid=ImgRaw&r=0);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 36px;
+            margin-top: 50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .card-content {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            color: #666;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        .schedule-list {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .schedule-list li {
+            list-style: none;
+            margin-bottom: 5px;
+        }
+
+        .card-body {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .card-body a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            font-weight: bold;
+            padding: 8px 16px;
+            background-color: #333;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .card-body a:hover {
+            background-color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Doctors List</h1>
+
+    <div class="container">
+        {% if doctors %}
+        {% for doctor in doctors %}
+        <div class="card">
+            <!-- Display Doctor's Image -->
+            {% if doctor.image %}
+            <img src="{{ doctor.image.url }}" alt="{{ doctor.first_name }} {{ doctor.last_name }}">
+            {% else %}
+            <div style="height: 200px; display: flex; justify-content: center; align-items: center; background-color: #eee;">
+                <p>No image available</p>
+            </div>
+            {% endif %}
+            <div class="card-content">
+                <div class="card-title">{{ doctor.first_name }} {{ doctor.last_name }}</div>
+                <div class="card-text">Specialization: {{ doctor.specialization }}</div>
+
+                <!-- Display Doctor's Schedule -->
+                <ul class="schedule-list">
+                    {% for schedule in schedules %}
+                        {% if schedule.doctor == doctor %}
+                            <li>{{ schedule.day }} - {{ schedule.shifts }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            
+        </div>
+        {% endfor %}
+        {% else %}
+        <p>No doctors available at the moment.</p>
+        {% endif %}
+    </div>
+
+</body>
+
+{% endblock content %}

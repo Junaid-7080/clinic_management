@@ -1,0 +1,33 @@
+<!-- receptionist_profile_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Profile Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        Receptionist Profile Details
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ receptionist_profile.name }}</h5>
+                        <p class="card-text"><strong>Contact Number:</strong> {{ receptionist_profile.contact_number }}</p>
+                        <p class="card-text"><strong>Address:</strong> {{ receptionist_profile.address }}</p>
+                        <p class="card-text"><strong>Clinic Name:</strong> {{ receptionist_profile.clinic_name }}</p>
+                        <p class="card-text"><strong>Emergency Contact:</strong> {{ receptionist_profile.emergency_contact }}</p>
+                        <a href="{% url 'edit_receptionist_profile' pk=receptionist_profile.pk %}" class="btn btn-primary">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+

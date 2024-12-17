@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Details</title>
+    <link rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Appointment Details</h1>
+        <p><strong>Token Number:</strong> {{ appointment.token }}</p>
+        <p><strong>Patient:</strong> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</p>
+        <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</p>
+        <p><strong>Date:</strong> {{ appointment.date }}</p>  <!-- Corrected field -->
+        <p><strong>Schedule:</strong> {{ appointment.schedule }}</p>  <!-- Displaying the schedule details (e.g., start time) -->
+        <p><strong>Time:</strong> {{ appointment.schedule.start_time }}</p>  <!-- If the schedule model has start_time -->
+    </div>
+</body>
+</html>
+
+
+
+

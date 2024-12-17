@@ -1,0 +1,13 @@
+<h1>Are you sure you want to delete this appointment?</h1>
+<p>
+    <strong>Patient:</strong> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}<br>
+    <strong>Doctor:</strong> Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}<br>
+    <strong>Date:</strong> {{ appointment.date }}<br>
+    <strong>Time:</strong> {{ appointment.schedule.start_time }} <!-- Assuming `start_time` is in `Schedule` model -->
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete appointment</button>
+    <a href="{% url 'list_appointments' %}">Cancel</a>
+</form>

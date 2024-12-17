@@ -1,0 +1,61 @@
+{% extends 'admin_base.html' %}
+{% block content %}
+<hr>
+<h1 style="text-align: center; color: #1A1B1E; font-family: Arial, sans-serif;">Admin Panel</h1>
+<hr>
+
+<div class="container mt-5">
+  <div class="row">
+    <!-- Company Users Section -->
+    <div class="col-md-6">
+      <h2 class="text-center mb-4" style="color: #0c0101;"><a href="{% url 'receptionist_list' %}">Receptionist Users</a></h2>
+      {% for i in main %}
+        {% if i.role == 2 and not i.is_approved %}
+          <div class="card mb-3" style="border-radius: 8px;">
+            <div class="card-body">
+              <h5 class="card-title">{{ i.username }}</h5>
+              <p class="card-text">Role: {{ i.get_role_display }}</p>
+              <a href="{% url 'add_recep' i.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Employee Users Section -->
+    <div class="col-md-6">
+      <h2 class="text-center mb-4" style="color: #0e0202;"><a href="{% url 'doctor_list' %}">doctors Users</a></h2>
+      {% for i in main %}
+        {% if i.role == 3 and not i.is_approved %}
+          <div class="card mb-3" style="border-radius: 8px;">
+            <div class="card-body">
+              <h5 class="card-title">{{ i.username }}</h5>
+              <p class="card-text">Role: {{ i.get_role_display }}</p>
+              <a href="{% url 'add_doctor' i.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="col-md-6">
+    <h2 class="text-center mb-4" style="color: #0e0202;"><a href="{% url 'patient_list' %}">patient Users</a></h2>
+    {% for i in main %}
+      {% if i.role == 4 and not i.is_approved %}
+        <div class="card mb-3" style="border-radius: 8px;">
+          <div class="card-body">
+            <h5 class="card-title">{{ i.username }}</h5>
+            <p class="card-text">Role: {{ i.get_role_display }}</p>
+            <a href="{% url 'add_patient' i.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+</div>
+
+
+{% endblock content %}
