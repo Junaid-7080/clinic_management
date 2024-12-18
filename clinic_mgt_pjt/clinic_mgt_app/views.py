@@ -237,6 +237,9 @@ def patient_home(request):
         # Redirect to a profile creation or error page if the patient doesn't exist
         return render(request, 'patient_profile_missing.html')
 
+    # Assuming the patient exists, fetch their appointments
+    appointments = Appointment.objects.filter(patient=patient).select_related('doctor', 'schedule')
+
     # Fetch all doctors
     doctors = Doctor.objects.all()
 
@@ -248,9 +251,9 @@ def patient_home(request):
         'patient': patient,
         'doctors': doctors,
         'schedules': schedules,
+        'appointments': appointments,
     }
     return render(request, 'patient_home.html', context)
-
 
 
 
@@ -487,7 +490,7 @@ def create_appointment(request):
 
 def appointment_detail(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
-    return render(request, 'appointment_detail.html', {"appointment": appointment})
+    return render(request, 'appointment_detail.html', {'appointment': appointment})
 
 
 

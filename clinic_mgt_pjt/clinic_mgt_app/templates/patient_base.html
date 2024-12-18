@@ -100,10 +100,11 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'patient_detail' patient.pk %}">Patient Profile</a>
                 </li>
+                {% for appointment in appointments %}
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'appointment_detail' pk=appointment.pk %}">Appointment</a>
-
                 </li>
+                {% endfor %}
             </ul>
         </div>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -127,7 +128,8 @@
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
