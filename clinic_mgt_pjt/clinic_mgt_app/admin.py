@@ -35,3 +35,15 @@ admin.site.register(Doctor)
 admin.site.register(Appointment)
 
 admin.site.register(Schedule)
+
+admin.site.register(Medicine)
+
+admin.site.register(Dose)
+
+admin.site.register(Test)
+
+admin.site.register(Prescription)
+
+admin.site.register(PrescriptionMedicine)
+
+admin.site.register(PrescriptionTest)

@@ -54,6 +54,14 @@ urlpatterns =[
     path('appoinment_conform/',views.appoinment_conform,name='appoinment_conform'),
     path('delete/<int:pk>/',views.appointment_delete, name='appointment_delete'),
 
+    path('prescription/create/<int:appointment_id>/', views.create_prescription, name='create_prescription'),
+    path('prescription/<int:prescription_id>/', views.prescription_detail, name='prescription_detail'),
+    path('medicine/create/', views.create_medicine, name='create_medicine'),
+    path('medicine/<int:medicine_id>/', views.medicine_detail, name='medicine_detail'),
+    path('medicine/<int:medicine_id>/create_dose/', views.create_dose, name='create_dose'),
+    path('test/create/', views.create_test, name='create_test'),
+    path('test/<int:test_id>/', views.test_detail, name='test_detail'),
+
 
 
     

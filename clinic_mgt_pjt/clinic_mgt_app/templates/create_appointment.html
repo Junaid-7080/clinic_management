@@ -92,7 +92,7 @@
         {% endif %}
         <form method="post">
             {% csrf_token %}
-
+    
             <div class="form-group">
                 <label for="patient">Patient:</label>
                 <select name="patient" id="patient" required>
@@ -102,7 +102,7 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
             <div class="form-group">
                 <label for="doctor">Doctor:</label>
                 <select name="doctor" id="doctor" required>
@@ -112,35 +112,37 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
             <div class="form-group">
                 <label for="schedule">Schedule:</label>
                 <select name="schedule" id="schedule" required>
                     <option value="" disabled selected>Select a schedule</option>
                 </select>
             </div>
-
+    
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" name="date" id="date" min="{{ now.date }}" required>
+            </div>
+    
             <button type="submit">Create Appointment</button>
         </form>
     </div>
-
+    
     <script>
         $(document).ready(function () {
             $('#doctor').change(function () {
                 const doctorId = $(this).val();
                 const scheduleSelect = $('#schedule');
-                
-                // Clear existing options
+    
                 scheduleSelect.empty().append('<option value="" disabled selected>Loading...</option>');
-
+    
                 if (doctorId) {
-                    // Fetch schedules for the selected doctor
                     $.ajax({
                         url: "{% url 'create_appointment' %}",
                         type: 'GET',
                         data: { doctor_id: doctorId },
                         success: function (response) {
-                            // Populate the schedule dropdown
                             scheduleSelect.empty().append('<option value="" disabled selected>Select a schedule</option>');
                             response.schedules.forEach(function (schedule) {
                                 scheduleSelect.append(`<option value="${schedule.id}">${schedule.day} - ${schedule.shifts}</option>`);

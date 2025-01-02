@@ -179,7 +179,52 @@ class Appointment(models.Model):
 
         super().save(*args, **kwargs)
 
-  
+
+class Medicine(models.Model):
+    name = models.CharField(max_length=255)
+
+    def _str_(self):
+        return self.name
+
+class Dose(models.Model):
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
+    dose = models.CharField(max_length=255)  # Example: '500mg'
+    cost = models.FloatField()
+
+    def _str_(self):
+        return f"{self.medicine.name} - {self.dose}"
+    
+class Test(models.Model):
+    name = models.CharField(max_length=255)
+    cost = models.FloatField()
+
+    def _str_(self):
+        return self.name
+
+
+
+
+class Prescription(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    illness_description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True)
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE,null=True)
+    date = models.DateField(null=True)
+    def _str_(self):
+        return f"Prescription for {self.patient} by {self.doctor} on {self.date}"
+
+
+
+class PrescriptionMedicine(models.Model):
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
+    dose = models.ForeignKey(Dose, on_delete=models.CASCADE)
+    per_day = models.IntegerField()
+    duration_days = models.IntegerField()
+
+class PrescriptionTest(models.Model):
+    Prescription = models.ForeignKey(Prescription,models.CASCADE)
+    test = models.ForeignKey(Test,models.CASCADE)
 
 
     

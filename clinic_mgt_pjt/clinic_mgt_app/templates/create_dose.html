@@ -1,0 +1,10 @@
+<form method="POST">
+    {% csrf_token %}
+    <label for="dose">Dose (e.g., 500mg)</label>
+    <input type="text" name="dose" required>
+
+    <label for="cost">Cost</label>
+    <input type="number" name="cost" required>
+
+    <button type="submit">Create Dose</button>
+</form>

@@ -1,0 +1,10 @@
+<h2>Medicine: {{ medicine.name }}</h2>
+
+<h3>Doses</h3>
+<ul>
+    {% for dose in doses %}
+        <li>{{ dose.dose }} - Cost: {{ dose.cost }}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'create_dose' medicine.id %}">Add Dose</a>

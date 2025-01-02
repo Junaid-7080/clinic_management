@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+            margin: 10px 0;
+        }
+        .details {
+            margin-bottom: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        ul li {
+            background-color: #f9f9fb;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .highlight {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Prescription Details</h2>
+        <div class="details">
+            <p><span class="highlight">Patient:</span> {{ prescription.patient }}</p>
+            <p><span class="highlight">Doctor:</span> {{ prescription.doctor }}</p>
+            <p><span class="highlight">Illness Description:</span> {{ prescription.illness_description }}</p>
+            <p><span class="highlight">Date:</span> {{ prescription.date }}</p>
+        </div>
+
+        <div class="section">
+            <h3>Medicines</h3>
+            <ul>
+                {% for medicine in medicines %}
+                    <li>{{ medicine.dose }} - ₹{{ medicine.cost }} per dose</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="section">
+            <h3>Tests</h3>
+            <ul>
+                {% for test in tests %}
+                    <li>{{ test.name }} - ₹{{ test.cost }} per test</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
+

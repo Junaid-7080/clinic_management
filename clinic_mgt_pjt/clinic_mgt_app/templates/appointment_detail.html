@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appointment Details</title>
+    <title>Appointment and Prescription Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,6 +12,7 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 600px;
             margin: 50px auto;
@@ -19,24 +21,34 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
-        h1 {
+
+        h1,
+        h2,
+        h3 {
             font-size: 24px;
             text-align: center;
             margin-bottom: 20px;
             color: #333;
         }
-        .details {
+
+        .details,
+        .medicine-list {
             margin: 20px 0;
         }
-        .details p {
+
+        .details p,
+        .medicine-item p {
             margin: 10px 0;
             font-size: 16px;
             color: #555;
         }
-        .details strong {
+
+        .details strong,
+        .medicine-item strong {
             font-weight: bold;
             color: #333;
         }
+
         .token {
             background-color: #007bff;
             color: #fff;
@@ -46,15 +58,45 @@
             border-radius: 5px;
             margin-bottom: 20px;
         }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button a {
+            text-decoration: none;
+            color: #fff;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         .footer {
             text-align: center;
             margin-top: 20px;
             color: #777;
             font-size: 14px;
         }
+
+        .medicine-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 </head>
+
 <body>
+    <!-- Appointment Details Section -->
     <div class="container">
         <div class="token">Token Number: {{ appointment.token }}</div>
         <h1>Appointment Details</h1>
@@ -65,13 +107,58 @@
             <p><strong>Schedule:</strong> {{ appointment.schedule.shifts }}</p>
             <p><strong>Time:</strong> {{ appointment.schedule.day }}</p>
         </div>
-        <button>Priscriptions</button>
+        {% if doctor %}
+    
+            <a href="{% url 'create_prescription' appointment.id %}">Create Prescription</a>
+    
+        {% endif %}
         <div class="footer">For any issues, please contact the clinic reception.</div>
     </div>
+    {% if patient %}
+    <!-- Prescription Details Section -->
+    <div class="container">
+        <h2>Prescription Details</h2>
+        
+        <!-- Patient and Doctor Details -->
+        <div class="details">
+            <p><strong>Patient:</strong> {{ prescription.patient }}</p>
+            <p><strong>Doctor:</strong> {{ prescription.doctor }}</p>
+            <p><strong>Illness Description:</strong> {{ prescription.illness_description }}</p>
+            <p><strong>Date:</strong> {{ prescription.date }}</p>
+        </div>
+
+        <!-- Medicines Section -->
+        <h3>Medicines</h3>
+        <div class="medicine-list">
+            {% for medicine in medicines %}
+                <div class="medicine-item">
+                    <p><strong>Name:</strong> {{ medicine.dose.medicine.name }}</p>
+                    <p><strong>Dose:</strong> {{ medicine.dose.dose }}</p>
+                    <p><strong>Doses Per Day:</strong> {{ medicine.per_day }}</p>
+                    <p><strong>Duration:</strong> {{ medicine.duration_days }} days</p>
+                    <p><strong>Cost:</strong> ₹{{ medicine.dose.medicine.cost }} per dose</p>
+                </div>
+            {% empty %}
+                <p>No medicines prescribed.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Optional Section for Tests (if any) -->
+        <h3>Tests</h3>
+        <div class="test-list">
+            {% for test in tests %}
+                <div class="test-item">
+                    <p><strong>Name:</strong> {{ test.name }}</p>
+                    <p><strong>Cost:</strong> ₹{{ test.cost }} per test</p>
+                </div>
+            {% empty %}
+                <p>No tests prescribed.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endif %}
+
 </body>
+
 </html>
-
-
-
-
-

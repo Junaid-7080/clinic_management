@@ -83,7 +83,7 @@
             <a href="{% url 'create_appointment' %}" class="btn">Create New Appointment</a>
         {% endif %}
 
-        {% if appointments %}
+        {% if grouped_appointments %}
             {% for schedule, appointments in grouped_appointments %}
                 <h2>{{ schedule.shifts }}</h2>
                 <table>
@@ -93,7 +93,7 @@
                             <th>Patient</th>
                             <th>Doctor</th>
                             <th>Date</th>
-                            <th></th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>

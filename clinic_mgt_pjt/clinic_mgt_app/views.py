@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .models import *
+from datetime import datetime
 import json
 from .models import CustomUser
 from django.http import HttpResponse
@@ -19,10 +20,10 @@ from operator import attrgetter
 # Create your views here.
 def register(request):
     if request.method == 'POST':
-        username = request.POST.get('Name')  # Match the field name in HTML
+        username = request.POST.get('Name')  
         email = request.POST.get('email')
-        password1 = request.POST.get('password')  # Match the field name in HTML
-        password2 = request.POST.get('confirm_password')  # Match the field name in HTML
+        password1 = request.POST.get('password')
+        password2 = request.POST.get('confirm_password')  
         role = request.POST.get('role')
 
         if password1 == password2:
@@ -144,11 +145,13 @@ def delete_receptionist(request):
 
 
 def recep_home(request):
-    # Fetch all doctors
+    
     doctors = Doctor.objects.all()
     
-    # Fetch the schedule for each doctor
+    
     schedules = Schedule.objects.all()
+
+    medicines = Medicine.objects.all()
     
     try:
         # Fetch receptionist profile for the logged-in user
@@ -166,11 +169,13 @@ def recep_home(request):
         except Schedule.DoesNotExist:
             raise Http404("Schedule not found.")
 
-    # Prepare context for the template
+    
     context = {
         'receptionist_profile': receptionist_profile,
         'doctors': doctors,
         'schedules': schedules,
+        'medicines': medicines
+        
     }
 
     return render(request, 'recep_home.html', context)
@@ -178,14 +183,13 @@ def recep_home(request):
 
 def create_receptionist_profile(request):
     if request.method == 'POST':
-        # Get form data
         name = request.POST.get('name')
         contact_number = request.POST.get('contact_number')
         address = request.POST.get('address')
         clinic_name = request.POST.get('clinic_name')
         emergency_contact = request.POST.get('emergency_contact')
 
-        # Create the ReceptionistProfile
+        
         receptionist_profile = ReceptionistProfile(
             recp_user=request.user,
             name=name,
@@ -234,19 +238,13 @@ def patient_home(request):
     patient = Patient.objects.filter(pat_user=request.user).first()
 
     if not patient:
-        # Redirect to a profile creation or error page if the patient doesn't exist
         return render(request, 'patient_profile_missing.html')
-
-    # Assuming the patient exists, fetch their appointments
     appointments = Appointment.objects.filter(patient=patient).select_related('doctor', 'schedule')
 
-    # Fetch all doctors
     doctors = Doctor.objects.all()
-
-    # Fetch schedules related to the listed doctors
     schedules = Schedule.objects.filter(doctor__in=doctors)
 
-    # Pass data to the template
+    
     context = {
         'patient': patient,
         'doctors': doctors,
@@ -274,7 +272,7 @@ def patient_create(request):
         # Assuming `pat_user` is the currently logged-in user
         pat_user = request.user if request.user.is_authenticated else None
 
-        # Create a new Patient instance
+        
         patient = Patient(
             first_name=first_name,
             last_name=last_name,
@@ -294,7 +292,7 @@ def patient_create(request):
         except Exception as e:
             messages.error(request, f"An error occurred: {e}")
 
-    # If GET request, render the template with the form
+    
     return render(request,'patient_create.html')
 
 
@@ -445,17 +443,28 @@ def create_appointment(request):
         patient_id = request.POST.get('patient')
         doctor_id = request.POST.get('doctor')
         schedule_id = request.POST.get('schedule')
+        appointment_date = request.POST.get('date')
 
         # Validate input and fetch related objects
         patient = get_object_or_404(Patient, id=patient_id)
         doctor = get_object_or_404(Doctor, id=doctor_id)
         schedule = get_object_or_404(Schedule, id=schedule_id)
 
+        # Convert date string to a datetime object
+        try:
+            appointment_date = datetime.strptime(appointment_date, '%Y-%m-%d').date()
+        except ValueError:
+            return render(request, 'create_appointment.html', {
+                'patients': Patient.objects.filter(pat_user__role=4),
+                'doctors': Doctor.objects.filter(doctor_user__role=3),
+                'schedules': Schedule.objects.all(),
+                'error_message': 'Invalid date format. Please use YYYY-MM-DD.',
+            })
+
         # Check if an appointment already exists for the same patient, doctor, schedule, and date
         if Appointment.objects.filter(
-            patient=patient, doctor=doctor, schedule=schedule, date=now().date()
+            patient=patient, doctor=doctor, schedule=schedule, date=appointment_date
         ).exists():
-            # Provide error context
             return render(request, 'create_appointment.html', {
                 'patients': Patient.objects.filter(pat_user__role=4),
                 'doctors': Doctor.objects.filter(doctor_user__role=3),
@@ -468,19 +477,17 @@ def create_appointment(request):
             patient=patient,
             doctor=doctor,
             schedule=schedule,
+            date=appointment_date
         )
         appointment.save()
 
-        # Redirect to a confirmation page (update the URL name as needed)
         return redirect('appoinment_conform')
 
-    # Handle AJAX request for fetching schedules
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         doctor_id = request.GET.get('doctor_id')
         schedules = Schedule.objects.filter(doctor_id=doctor_id).values('id', 'day', 'shifts')
         return JsonResponse({'schedules': list(schedules)})
 
-    # Prepare context data for the GET request
     context = {
         'patients': Patient.objects.filter(pat_user__role=4),
         'doctors': Doctor.objects.filter(doctor_user__role=3),
@@ -490,7 +497,43 @@ def create_appointment(request):
 
 def appointment_detail(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
-    return render(request, 'appointment_detail.html', {'appointment': appointment})
+
+    # Fetch related patient
+    patient = appointment.patient
+
+    # Check if the logged-in user is a doctor
+    doctor = Doctor.objects.filter(doctor_user=request.user).exists()
+
+    # Fetch the prescription related to the appointment
+    prescription = Prescription.objects.filter(appointment=appointment).first()
+
+    # Fetch medicines related to the prescription
+    medicines = []
+    tests = []
+    if prescription:
+        # Fetch related PrescriptionMedicine and Dose, including medicine details
+        medicines = (
+            prescription.prescriptionmedicine_set
+            .select_related('dose__medicine')
+            .all()
+        )
+        # Fetch related PrescriptionTest, including test details
+        tests = prescription.prescriptiontest_set.select_related('test').all()
+
+    context = {
+        'appointment': appointment,
+        'patient': patient,
+        'doctor': doctor,
+        'prescription': prescription,
+        'medicines': medicines,
+        'tests': tests,
+    }
+
+    return render(request, 'appointment_detail.html', context)
+
+
+
+
 
 
 
@@ -504,10 +547,10 @@ def list_appointments(request):
 
     if request.user.role == 2:  # Assuming role '2' for doctors
         # Fetch only the appointments for the logged-in doctor
-        appointments = Appointment.objects.filter(doctor=request.user).select_related('patient', 'doctor', 'schedule').order_by('schedule__shifts')
+        appointments = Appointment.objects.filter(doctor=request.user).select_related('patient', 'doctor', 'schedule').order_by('schedule__shifts','id')
     else:
         # For other users (e.g., patients), fetch all appointments
-        appointments = Appointment.objects.filter(doctor=doctor_profile).select_related('patient', 'doctor', 'schedule').order_by('schedule__shifts')
+        appointments = Appointment.objects.filter(doctor=doctor_profile).select_related('patient', 'doctor', 'schedule').order_by('schedule__shifts','id')
 
     # Group appointments by schedule
     grouped_appointments = []
@@ -544,6 +587,193 @@ def appointment_delete(request, pk):
     }
 
     return render(request, 'appointment_delete.html', context)
+
+
+
+
+
+
+def create_prescription(request, appointment_id):
+    # Fetch all available medicines, tests, and the current appointment
+    medicines = Medicine.objects.all()
+    tests = Test.objects.all()
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Retrieve or initialize a prescription for the appointment
+    prescription = Prescription.objects.filter(appointment=appointment).first()
+
+    if not prescription and request.method == 'POST' and 'final_submit' in request.POST:
+        # Create a new prescription when "Finalize Prescription" is clicked
+        illness_description = request.POST.get('illness_description')
+        date = request.POST.get('date')
+
+        prescription = Prescription.objects.create(
+            appointment=appointment,
+            illness_description=illness_description,
+            patient=appointment.patient,
+            doctor=appointment.doctor,
+            date=date
+        )
+        return redirect('create_prescription', appointment_id=appointment_id)
+
+    if request.method == 'POST' and 'add_medicine' in request.POST:
+        if not prescription:
+            # Ensure the prescription is created before adding medicines
+            return render(request, 'create_prescription.html', {
+                'appointment': appointment,
+                'doses': Dose.objects.all(),
+                'error': 'You must finalize the prescription before adding medicines.',
+            })
+
+        # Retrieve data from POST for medicines
+        dose_ids = request.POST.getlist('dose')  # Allows multiple selection
+        per_day = request.POST.get('per_day')
+        duration_days = request.POST.get('duration_days')
+
+        if not dose_ids or not per_day or not duration_days:
+            # Validation check for missing inputs
+            return render(request, 'create_prescription.html', {
+                'appointment': appointment,
+                'doses': Dose.objects.all(),
+                'prescription': prescription,
+                'error': 'All fields are required to add medicines.',
+            })
+
+        # Add medicines to the prescription
+        for dose_id in dose_ids:
+            try:
+                dose = Dose.objects.get(id=dose_id)
+                PrescriptionMedicine.objects.create(
+                    prescription=prescription,
+                    dose=dose,
+                    per_day=per_day,
+                    duration_days=duration_days,
+                )
+            except Dose.DoesNotExist:
+                # Skip invalid or missing dose IDs
+                continue
+
+        # Redirect to the same page to refresh data
+        return redirect('create_prescription', appointment_id=appointment_id)
+
+    if request.method == 'POST' and 'add_test' in request.POST:
+        if not prescription:
+            # Ensure the prescription is created before adding tests
+            return render(request, 'create_prescription.html', {
+                'appointment': appointment,
+                'tests': tests,
+                'error': 'You must finalize the prescription before adding tests.',
+            })
+
+        # Retrieve data from POST for tests
+        test_ids = request.POST.getlist('test')  # Allows multiple selection
+
+        if not test_ids:
+            # Validation check for missing tests
+            return render(request, 'create_prescription.html', {
+                'appointment': appointment,
+                'tests': tests,
+                'prescription': prescription,
+                'error': 'Please select at least one test to add.',
+            })
+
+        # Add tests to the prescription
+        for test_id in test_ids:
+            try:
+                test = Test.objects.get(id=test_id)
+                PrescriptionTest.objects.create(
+                    prescription=prescription,
+                    test=test,
+                )
+            except Test.DoesNotExist:
+                # Skip invalid or missing test IDs
+                continue
+
+        # Redirect to the same page to refresh data
+        return redirect('create_prescription', appointment_id=appointment_id)
+
+    # Render the prescription form with context data
+    context = {
+        'appointment': appointment,
+        'doses': Dose.objects.all(),
+        'prescription': prescription,
+        'medicines': medicines,
+        'tests': tests,
+    }
+    return render(request, 'create_prescription.html', context)
+
+
+
+
+
+
+
+def prescription_detail(request, prescription_id):
+    prescription = get_object_or_404(Prescription, id=prescription_id)
+    medicines = PrescriptionMedicine.objects.filter(prescription=prescription)
+    return render(request, 'prescription_detail.html', {'prescription': prescription, 'medicines': medicines})
+
+
+
+
+
+def create_medicine(request):
+    # Fetch all medicines from the database
+    medicines = Medicine.objects.all()
+
+    if request.method == 'POST':
+        # Get the selected medicine id
+        medicine_id = request.POST.get('medicine')
+        
+        # You can now use this ID for whatever you need (e.g., create a dose)
+        medicine = Medicine.objects.get(id=medicine_id)
+
+        # Logic for creating a dose or other functionality can go here
+        # For example:
+        # Dose.objects.create(medicine=medicine, dose=dose_value, cost=cost_value)
+        
+        return redirect('medicine_detail', medicine_id=medicine.id)  # Redirect after successful action
+
+    return render(request, 'create_medicine.html', {'medicines': medicines})
+
+
+
+def medicine_detail(request, medicine_id):
+    medicine = get_object_or_404(Medicine, id=medicine_id)
+    doses = Dose.objects.filter(medicine=medicine)
+    return render(request, 'medicine_detail.html', {'medicine': medicine, 'doses': doses})
+
+
+def create_dose(request, medicine_id):
+    medicine = get_object_or_404(Medicine, id=medicine_id)
+    if request.method == 'POST':
+        dose = request.POST.get('dose')
+        cost = request.POST.get('cost')
+
+        Dose.objects.create(medicine=medicine, dose=dose, cost=cost)
+        return redirect('medicine_detail', medicine_id=medicine.id)
+
+    return render(request, 'create_dose.html', {'medicine': medicine})
+
+
+def create_test(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        cost = request.POST.get('cost')
+        test = Test.objects.create(name=name, cost=cost)
+        return redirect('test_detail', test_id=test.id)
+
+    return render(request, 'create_test.html')
+
+
+def test_detail(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    return render(request, 'test_detail.html', {'test': test})
+
+
+
+
+
 
 
 def add_recep(request,id):
