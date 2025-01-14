@@ -18,7 +18,7 @@
                             
                             <div class="form-group">
                                 <label for="contact_number">Name</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ request.user.username }}" required>
                             </div>
                             <div class="form-group">
                                 <label for="contact_number">Contact Number</label>

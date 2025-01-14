@@ -20,7 +20,7 @@
                             
                             <div class="form-group">
                                 <label for="first_name">First Name</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ request.user.username }}" required>
                             </div>
 
                             <div class="form-group">
@@ -49,7 +49,7 @@
 
                             <div class="form-group">
                                 <label for="email">Email</label>
-                                <input type="email" class="form-control" id="email" name="email">
+                                <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}">
                             </div>
 
                             <div class="form-group">

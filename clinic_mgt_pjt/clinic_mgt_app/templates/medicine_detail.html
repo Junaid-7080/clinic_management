@@ -1,10 +1,93 @@
-<h2>Medicine: {{ medicine.name }}</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li:nth-child(even) {
+            background-color: #e9f7e5;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+        }
+        a:hover {
+            background-color: #45a049;
+        }
+        .dose-info {
+            font-weight: bold;
+            color: #555;
+        }
+        .cost-info {
+            font-style: italic;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
 
-<h3>Doses</h3>
-<ul>
-    {% for dose in doses %}
-        <li>{{ dose.dose }} - Cost: {{ dose.cost }}</li>
-    {% endfor %}
-</ul>
+<div class="container">
+    <h2>Medicine: {{ medicine.name }}</h2>
 
-<a href="{% url 'create_dose' medicine.id %}">Add Dose</a>
+    <h3>Doses</h3>
+    <ul>
+        {% for dose in doses %}
+            <li>
+                <span class="dose-info">{{ dose.dose }}</span> 
+                <span class="cost-info">- Cost: {{ dose.cost }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'create_dose' medicine.id %}">Add Dose</a>
+</div>
+
+</body>
+</html>
+
+
+
+

@@ -13,6 +13,8 @@ from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 from itertools import groupby
 from operator import attrgetter
+import random
+from django.core.mail import send_mail
     
 
 
@@ -495,31 +497,30 @@ def create_appointment(request):
     return render(request, 'create_appointment.html', context)
 
 
+
+
 def appointment_detail(request, pk):
+    # Get the appointment instance
     appointment = get_object_or_404(Appointment, pk=pk)
 
-    # Fetch related patient
+    # Fetch the related patient
     patient = appointment.patient
 
     # Check if the logged-in user is a doctor
-    doctor = Doctor.objects.filter(doctor_user=request.user).exists()
+    doctor = Doctor.objects.filter(doctor_user=request.user).first()  # Check if the user is a doctor
 
-    # Fetch the prescription related to the appointment
+    # Fetch the prescription related to the appointment (if it exists)
     prescription = Prescription.objects.filter(appointment=appointment).first()
 
-    # Fetch medicines related to the prescription
-    medicines = []
-    tests = []
     if prescription:
-        # Fetch related PrescriptionMedicine and Dose, including medicine details
-        medicines = (
-            prescription.prescriptionmedicine_set
-            .select_related('dose__medicine')
-            .all()
-        )
-        # Fetch related PrescriptionTest, including test details
-        tests = prescription.prescriptiontest_set.select_related('test').all()
+        # Fetch related medicines and tests if a prescription exists
+        medicines = PrescriptionMedicine.objects.filter(prescription=prescription)
+        tests = PrescriptionTest.objects.filter(prescription=prescription)
+    else:
+        medicines = []
+        tests = []
 
+    # Context for the template
     context = {
         'appointment': appointment,
         'patient': patient,
@@ -530,6 +531,8 @@ def appointment_detail(request, pk):
     }
 
     return render(request, 'appointment_detail.html', context)
+
+
 
 
 
@@ -592,117 +595,76 @@ def appointment_delete(request, pk):
 
 
 
-
 def create_prescription(request, appointment_id):
-    # Fetch all available medicines, tests, and the current appointment
     medicines = Medicine.objects.all()
+    doses = Dose.objects.all()
     tests = Test.objects.all()
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
-    # Retrieve or initialize a prescription for the appointment
-    prescription = Prescription.objects.filter(appointment=appointment).first()
+    # Ensure the prescription is initialized for the appointment
+    prescription, created = Prescription.objects.get_or_create(appointment=appointment)
 
-    if not prescription and request.method == 'POST' and 'final_submit' in request.POST:
-        # Create a new prescription when "Finalize Prescription" is clicked
-        illness_description = request.POST.get('illness_description')
-        date = request.POST.get('date')
+    if request.method == 'POST':
+        action = request.POST.get('action')
 
-        prescription = Prescription.objects.create(
-            appointment=appointment,
-            illness_description=illness_description,
-            patient=appointment.patient,
-            doctor=appointment.doctor,
-            date=date
-        )
-        return redirect('create_prescription', appointment_id=appointment_id)
+        if action == 'final_submit':
+            illness_description = request.POST.get('illness_description')
+            date = request.POST.get('date')
 
-    if request.method == 'POST' and 'add_medicine' in request.POST:
-        if not prescription:
-            # Ensure the prescription is created before adding medicines
-            return render(request, 'create_prescription.html', {
-                'appointment': appointment,
-                'doses': Dose.objects.all(),
-                'error': 'You must finalize the prescription before adding medicines.',
-            })
+            if not illness_description or not date:
+                messages.error(request, "Illness description and date are required.")
+                return redirect('create_prescription', appointment_id=appointment_id)
 
-        # Retrieve data from POST for medicines
-        dose_ids = request.POST.getlist('dose')  # Allows multiple selection
-        per_day = request.POST.get('per_day')
-        duration_days = request.POST.get('duration_days')
+            prescription.illness_description = illness_description
+            prescription.date = date
+            prescription.save()
+            messages.success(request, "Prescription finalized successfully!")
+            return redirect('create_prescription', appointment_id=appointment_id)
 
-        if not dose_ids or not per_day or not duration_days:
-            # Validation check for missing inputs
-            return render(request, 'create_prescription.html', {
-                'appointment': appointment,
-                'doses': Dose.objects.all(),
-                'prescription': prescription,
-                'error': 'All fields are required to add medicines.',
-            })
+        elif action == 'add_medicine':
+            medicine_ids = request.POST.getlist('medicine_id[]')
+            per_day = request.POST.getlist('per_day[]')
+            duration_days = request.POST.getlist('duration_days[]')
 
-        # Add medicines to the prescription
-        for dose_id in dose_ids:
-            try:
-                dose = Dose.objects.get(id=dose_id)
+            if not medicine_ids:
+                messages.error(request, "Please add at least one medicine.")
+                return redirect('create_prescription', appointment_id=appointment_id)
+
+            for i in range(len(medicine_ids)):
+                medicine = get_object_or_404(Medicine, id=medicine_ids[i])
                 PrescriptionMedicine.objects.create(
                     prescription=prescription,
-                    dose=dose,
-                    per_day=per_day,
-                    duration_days=duration_days,
+                    medicine=medicine,
+                    per_day=per_day[i],
+                    duration_days=duration_days[i]
                 )
-            except Dose.DoesNotExist:
-                # Skip invalid or missing dose IDs
-                continue
+            messages.success(request, "Medicines added successfully!")
+            return redirect('create_prescription', appointment_id=appointment_id)
 
-        # Redirect to the same page to refresh data
-        return redirect('create_prescription', appointment_id=appointment_id)
+        elif action == 'add_test':
+            test_ids = request.POST.getlist('test_id[]')
 
-    if request.method == 'POST' and 'add_test' in request.POST:
-        if not prescription:
-            # Ensure the prescription is created before adding tests
-            return render(request, 'create_prescription.html', {
-                'appointment': appointment,
-                'tests': tests,
-                'error': 'You must finalize the prescription before adding tests.',
-            })
+            if not test_ids:
+                messages.error(request, "Please add at least one test.")
+                return redirect('create_prescription', appointment_id=appointment_id)
 
-        # Retrieve data from POST for tests
-        test_ids = request.POST.getlist('test')  # Allows multiple selection
-
-        if not test_ids:
-            # Validation check for missing tests
-            return render(request, 'create_prescription.html', {
-                'appointment': appointment,
-                'tests': tests,
-                'prescription': prescription,
-                'error': 'Please select at least one test to add.',
-            })
-
-        # Add tests to the prescription
-        for test_id in test_ids:
-            try:
-                test = Test.objects.get(id=test_id)
+            for test_id in test_ids:
+                test = get_object_or_404(Test, id=test_id)
                 PrescriptionTest.objects.create(
                     prescription=prescription,
-                    test=test,
+                    test=test
                 )
-            except Test.DoesNotExist:
-                # Skip invalid or missing test IDs
-                continue
+            messages.success(request, "Tests added successfully!")
+            return redirect('create_prescription', appointment_id=appointment_id)
 
-        # Redirect to the same page to refresh data
-        return redirect('create_prescription', appointment_id=appointment_id)
-
-    # Render the prescription form with context data
     context = {
         'appointment': appointment,
-        'doses': Dose.objects.all(),
-        'prescription': prescription,
         'medicines': medicines,
+        'doses': doses,
         'tests': tests,
+        'prescription': prescription,
     }
     return render(request, 'create_prescription.html', context)
-
-
 
 
 
@@ -720,6 +682,7 @@ def prescription_detail(request, prescription_id):
 def create_medicine(request):
     # Fetch all medicines from the database
     medicines = Medicine.objects.all()
+    
 
     if request.method == 'POST':
         # Get the selected medicine id
@@ -771,6 +734,64 @@ def test_detail(request, test_id):
     return render(request, 'test_detail.html', {'test': test})
 
 
+
+def forgot_password(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        user = CustomUser.objects.filter(username=username).first()
+        if user:
+            email = user.email
+            otp = random.randrange(1000,9999)
+            subject = 'Password Reset'
+            message = f'Here is your otp - {otp}'
+            from_email = 'junaidabdrahiman15@gmail.com'
+            to = [email]
+            send_mail(
+                subject = subject,
+                message = message,
+                from_email =from_email,
+                recipient_list = to,
+                fail_silently = False
+            )
+            UserOTP.objects.update_or_create(
+            user=user,
+            defaults = {'otp':otp}
+            )
+            return redirect('otp_verify',user.id)
+           
+    return render(request,'forgot_password.html')
+
+
+
+
+def otp_verify(request,id):
+    user = CustomUser.objects.get(id=id)
+    if request.method == 'POST':
+        submitted_otp = request.POST.get('otp')
+        user_otp_obj = UserOTP.objects.filter(user=user).first()
+        send_otp = user_otp_obj.otp
+        if submitted_otp == send_otp:
+            messages.success(request, 'OTP Verified')
+            return redirect('password_reset',user.id)
+        messages.error(request, 'Please enter valid OTP')
+        return redirect('otp_verify',id)
+    
+    return render(request,'otp_verify.html',context={'email':user.email})
+
+
+
+
+def password_reset(request,id):
+    user = CustomUser.objects.get(id=id)
+    if request.method == "POST":
+        password1=request.POST.get('password1') 
+        password2=request.POST.get('password2')
+        if password2 == password1:
+            user.set_password(password2)
+            user.save()
+            return redirect('login') 
+        
+    return render(request,"password_reset.html")   
 
 
 

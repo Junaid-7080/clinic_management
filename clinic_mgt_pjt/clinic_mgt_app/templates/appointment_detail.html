@@ -114,15 +114,15 @@
         {% endif %}
         <div class="footer">For any issues, please contact the clinic reception.</div>
     </div>
-    {% if patient %}
+{% if prescription %}
     <!-- Prescription Details Section -->
     <div class="container">
         <h2>Prescription Details</h2>
         
         <!-- Patient and Doctor Details -->
         <div class="details">
-            <p><strong>Patient:</strong> {{ prescription.patient }}</p>
-            <p><strong>Doctor:</strong> {{ prescription.doctor }}</p>
+            <p><strong>Patient:</strong> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</p>
+            <p><strong>Doctor:</strong> Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}</p>
             <p><strong>Illness Description:</strong> {{ prescription.illness_description }}</p>
             <p><strong>Date:</strong> {{ prescription.date }}</p>
         </div>
@@ -130,34 +130,51 @@
         <!-- Medicines Section -->
         <h3>Medicines</h3>
         <div class="medicine-list">
-            {% for medicine in medicines %}
-                <div class="medicine-item">
-                    <p><strong>Name:</strong> {{ medicine.dose.medicine.name }}</p>
-                    <p><strong>Dose:</strong> {{ medicine.dose.dose }}</p>
-                    <p><strong>Doses Per Day:</strong> {{ medicine.per_day }}</p>
-                    <p><strong>Duration:</strong> {{ medicine.duration_days }} days</p>
-                    <p><strong>Cost:</strong> ₹{{ medicine.dose.medicine.cost }} per dose</p>
-                </div>
-            {% empty %}
+            {% if medicines %}
+                <ul>
+                    {% for medicine in medicines %}
+                        <li class="medicine-item">
+                            <p><strong>Medicine:</strong> {{ medicine.medicine.name }}</p>
+                            <p><strong>Dose:</strong> {{ medicine.medicine.dose_set.first.dose }}</p>
+                            <p><strong>Doses Per Day:</strong> {{ medicine.per_day }}</p>
+                            <p><strong>Duration:</strong> {{ medicine.duration_days }} days</p>
+                            <p><strong>Cost:</strong> ₹{{ medicine.medicine.dose_set.first.cost }} per dose</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
                 <p>No medicines prescribed.</p>
-            {% endfor %}
+            {% endif %}
         </div>
 
-        <!-- Optional Section for Tests (if any) -->
+        <!-- Tests Section -->
         <h3>Tests</h3>
         <div class="test-list">
-            {% for test in tests %}
-                <div class="test-item">
-                    <p><strong>Name:</strong> {{ test.name }}</p>
-                    <p><strong>Cost:</strong> ₹{{ test.cost }} per test</p>
-                </div>
-            {% empty %}
+            {% if tests %}
+                <ul>
+                    {% for test in tests %}
+                        <li class="test-item">
+                            <p><strong>Test Name:</strong> {{ test.test.name }}</p>
+                            <p><strong>Cost:</strong> ₹{{ test.test.cost }} per test</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
                 <p>No tests prescribed.</p>
-            {% endfor %}
+            {% endif %}
         </div>
 
     </div>
+{% else %}
+    <p>No prescription found for this appointment.</p>
 {% endif %}
+
+{% if patient %}
+<button type="submit">payment</button>
+{% endif %}
+
+
+    
 
 </body>
 

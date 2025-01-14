@@ -12,96 +12,106 @@
             padding: 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 30px auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        h2, h3 {
+        h2 {
             text-align: center;
-            margin-bottom: 20px;
         }
-        label {
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: block;
-        }
-        textarea, input[type="date"], input[type="number"], select {
+        label, select, input, textarea, button {
             width: 100%;
+            margin-bottom: 15px;
+        }
+        textarea, input, select {
             padding: 10px;
-            margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
-        }
-        textarea {
-            height: 120px;
-            resize: vertical;
         }
         button {
-            width: 100%;
-            padding: 12px;
             background-color: #4CAF50;
             color: white;
-            font-size: 16px;
+            padding: 10px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
         }
         button:hover {
             background-color: #45a049;
         }
-        .section-divider {
-            margin: 30px 0;
-            border-top: 1px solid #ddd;
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
     </style>
+    <script>
+        function addField(containerId, templateId) {
+            const container = document.getElementById(containerId);
+            const template = document.getElementById(templateId).content.cloneNode(true);
+            container.appendChild(template);
+        }
+
+        function removeField(button) {
+            button.parentElement.remove();
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h2>Create Prescription</h2>
-        <form method="POST">
+        <form method="post">
             {% csrf_token %}
-            
             <label for="illness_description">Illness Description:</label>
-            <textarea name="illness_description" id="illness_description" required></textarea>
-        
+            <textarea id="illness_description" name="illness_description" required>{{ prescription.illness_description }}</textarea>
+
             <label for="date">Date:</label>
-            <input type="date" name="date" id="date" required>
-        
-            <label for="dose">Select Dose(s):</label>
-            <select name="dose" id="dose" multiple required>
-                {% for dose in doses %}
-                    <option value="{{ dose.id }}">{{ dose.medicine.name }} - {{ dose.dose }}</option>
-                {% endfor %}
-            </select>
-        
-            <label for="per_day">Doses Per Day:</label>
-            <input type="number" name="per_day" id="per_day" min="1" required>
-        
-            <label for="duration_days">Duration (Days):</label>
-            <input type="number" name="duration_days" id="duration_days" min="1" required>
-        
-            <button type="submit" name="add_medicine">Add Medicine</button><br><br>
+            <input type="date" id="date" name="date" required value="{{ prescription.date|date:'Y-m-d' }}">
 
-            <!-- Tests Section -->
-            <div class="section-divider"></div>
-            <h3>Add Tests</h3>
-            <label for="test">Select Test(s):</label>
-            <select name="test" id="test" multiple>
-                {% for test in tests %}
-                    <option value="{{ test.id }}">{{ test.name }} - ₹{{ test.cost }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="add_test">Add Test</button><br><br>
+            <h3>Medicines</h3>
+            <div id="medicines"></div>
+            <button type="button" onclick="addField('medicines', 'medicine-template')">Add Medicine</button>
 
-            <button type="submit" name="final_submit">Finalize Prescription</button>
+            <h3>Tests</h3>
+            <div id="tests"></div>
+            <button type="button" onclick="addField('tests', 'test-template')">Add Test</button>
+
+            <button type="submit" name="action" value="final_submit">Finalize Prescription</button>
+            <button type="submit" name="action" value="add_medicine">Save Medicines</button>
+            <button type="submit" name="action" value="add_test">Save Tests</button>
         </form>
     </div>
+
+    <template id="medicine-template">
+        <div class="flex-container">
+            <select name="medicine_id[]" required>
+                {% for medicine in medicines %}
+                    <option value="{{ medicine.id }}">{{ medicine.name }}.{{ medicine.dose }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="per_day[]" placeholder="Per Day" required>
+            <input type="number" name="duration_days[]" placeholder="Duration (Days)" required>
+            <button type="button" onclick="removeField(this)">Remove</button>
+        </div>
+    </template>
+
+    <template id="test-template">
+        <div class="flex-container">
+            <select name="test_id[]" required>
+                {% for test in tests %}
+                    <option value="{{ test.id }}">{{ test.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" onclick="removeField(this)">Remove</button>
+        </div>
+    </template>
 </body>
 </html>
+
+
 
 
 

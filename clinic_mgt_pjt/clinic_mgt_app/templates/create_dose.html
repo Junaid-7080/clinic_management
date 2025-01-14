@@ -1,10 +1,94 @@
-<form method="POST">
-    {% csrf_token %}
-    <label for="dose">Dose (e.g., 500mg)</label>
-    <input type="text" name="dose" required>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Dose</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    <label for="cost">Cost</label>
-    <input type="number" name="cost" required>
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-    <button type="submit">Create Dose</button>
-</form>
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-container a {
+            text-align: center;
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create Dose</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="dose">Dose (e.g., 500mg)</label>
+            <input type="text" name="dose" id="dose" required>
+
+            <label for="cost">Cost</label>
+            <input type="number" name="cost" id="cost" required>
+
+            <button type="submit">Create Dose</button>
+        </form>
+    </div>
+</body>
+</html>
+

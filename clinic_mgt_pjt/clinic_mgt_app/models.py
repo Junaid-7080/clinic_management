@@ -218,14 +218,24 @@ class Prescription(models.Model):
 
 class PrescriptionMedicine(models.Model):
     prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
-    dose = models.ForeignKey(Dose, on_delete=models.CASCADE)
+    medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     per_day = models.IntegerField()
     duration_days = models.IntegerField()
 
-class PrescriptionTest(models.Model):
-    Prescription = models.ForeignKey(Prescription,models.CASCADE)
-    test = models.ForeignKey(Test,models.CASCADE)
+    def __str__(self):
+        return f"Medicine for Prescription {self.prescription}"
 
+class PrescriptionTest(models.Model):
+    prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Test for Prescription {self.prescription}"
+
+
+class UserOTP(models.Model):
+    otp = models.CharField(max_length=5)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     
 

@@ -63,7 +63,9 @@ urlpatterns =[
     path('test/<int:test_id>/', views.test_detail, name='test_detail'),
 
 
-
+    path('forgotpassword/',views.forgot_password,name='forgot_password'),
+    path('verfy_otp/<int:id>/',views.otp_verify,name='otp_verify'),
+    path('passwordreset/<int:id>/',views.password_reset,name='password_reset'),
     
 
 ]
