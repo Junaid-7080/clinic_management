@@ -19,14 +19,21 @@ from django.core.mail import send_mail
 
 
 
-# Create your views here.
 def register(request):
+    # Filter role choices based on the logged-in user's role
+    if request.user.role == 1:  # Admin
+        filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name in ['Receptionist', 'Doctor','Pharmacist']]
+    elif request.user.role == 2:  # Receptionist
+        filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name == 'Patient']
+    else:
+        return HttpResponse("You do not have permission to register users.")
+
     if request.method == 'POST':
-        username = request.POST.get('Name')  
+        username = request.POST.get('Name')
         email = request.POST.get('email')
         password1 = request.POST.get('password')
-        password2 = request.POST.get('confirm_password')  
-        role = request.POST.get('role')
+        password2 = request.POST.get('confirm_password')
+        role = int(request.POST.get('role'))
 
         if password1 == password2:
             if CustomUser.objects.filter(username=username).exists():
@@ -44,8 +51,7 @@ def register(request):
                 return HttpResponse(str(e))
         else:
             return HttpResponse("Passwords do not match.")
-    
-    filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name != 'Admin']
+
     context = {'role_choices': filter_ROLE_CHOICE}
     return render(request, 'register.html', context)
 
@@ -81,6 +87,11 @@ def user_login(request):
                         return redirect('patient_home')
                     else:
                         return redirect('patient_create')
+                elif user.role == 5:
+                    if Pharmacistprofile.objects.filter(phar_user=user).exists():
+                        return redirect('pharmacist_home')
+                    else:
+                        return redirect('Pharmacist_create')
                     
                     
 
@@ -96,10 +107,42 @@ def user_logout(request):
 def not_login(request):
     return render(request,'not_login.html')
 
+
+
 def admin_home(request):
-    main = CustomUser.objects.all()
-    context ={'main':main}
-    return render (request,'admin_home.html',context)
+    all_users = CustomUser.objects.all()
+    receptionists = all_users.filter(role=2, is_approved=False)
+    doctors = all_users.filter(role=3, is_approved=False)
+    patients = all_users.filter(role=4, is_approved=False)
+    pharmacists = all_users.filter(role=5, is_approved=False)  # Assuming role=5 for pharmacists
+    total_receptionists = all_users.filter(role=2).count()
+    total_doctors = all_users.filter(role=3).count()
+    total_patients = all_users.filter(role=4).count()
+    total_pharmacists = all_users.filter(role=5).count()  # Total pharmacists
+    total_appointments = Appointment.objects.count()
+    pending_approvals = all_users.filter(is_approved=False).count()
+
+    context = {
+        'receptionists': receptionists,
+        'doctors': doctors,
+        'patients': patients,
+        'pharmacists': pharmacists,  # Add pharmacists to the context
+        'total_receptionists': total_receptionists,
+        'total_doctors': total_doctors,
+        'total_patients': total_patients,
+        'total_pharmacists': total_pharmacists,  # Pass total pharmacists
+        'total_appointments': total_appointments,
+        'pending_approvals': pending_approvals,
+    }
+    return render(request, 'admin_home.html', context)
+
+
+
+def admin_profile_detail(request):
+    admin_user = get_object_or_404(CustomUser, id=request.user.id)
+    return render(request, 'admin_profile_detail.html', {'admin_user': admin_user})
+
+
 
 def doctor_list(request):
     doctors = Doctor.objects.all()
@@ -112,12 +155,19 @@ def delete_doctor(request):
         doctor.delete()
         return redirect('doctor_list')
     
+
+
 def patient_list(request):
     patients = Patient.objects.all()  # Fetch all patient records
     context = {
         'patients': patients
     }
     return render(request, 'patients_list.html', context)
+
+
+
+
+
 
 def delete_patient(request):
     if request.method == "POST":
@@ -127,6 +177,8 @@ def delete_patient(request):
         return redirect('patient_list')
     
 
+
+
 def receptionist_list(request):
     receptionists = ReceptionistProfile.objects.all()  
     context = {
@@ -135,12 +187,30 @@ def receptionist_list(request):
     return render(request, 'receptionists_list.html', context)
 
 
+
+
 def delete_receptionist(request):
     if request.method == "POST":
         receptionist_id = request.POST.get('receptionist_id')
         receptionist = get_object_or_404(ReceptionistProfile, id=receptionist_id)
         receptionist.delete()
         return redirect('receptionist_list')
+    
+
+def pharmacist_list(request):
+    pharmacist = Pharmacistprofile.objects.all()
+    context = {'pharmacist': pharmacist}
+
+    return render(request,'pharmacist_list.html',context)
+
+
+def delete_pharmacist(request):
+    if request.method == "POST":
+        pharmacist_id = request.POST.get('pharmacist_id')
+        pharmacist = get_object_or_404(Pharmacistprofile, id=pharmacist_id)
+        pharmacist.delete()
+        return redirect('pharmacist_list')
+   
 
 
 
@@ -149,10 +219,7 @@ def delete_receptionist(request):
 def recep_home(request):
     
     doctors = Doctor.objects.all()
-    
-    
     schedules = Schedule.objects.all()
-
     medicines = Medicine.objects.all()
     
     try:
@@ -181,6 +248,8 @@ def recep_home(request):
     }
 
     return render(request, 'recep_home.html', context)
+
+
 
 
 def create_receptionist_profile(request):
@@ -232,6 +301,51 @@ def edit_receptionist_profile(request, pk):
         return redirect('recep_home')  # Redirect to the home page or another relevant page
 
     return render(request, 'recp_pro_edit.html', {'receptionist_profile': receptionist_profile})
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Pharmacistprofile
+
+def pharmacist_home(request):
+    # Assuming there is a one-to-one relationship between the user and Pharmacistprofile
+    pharmacist = Pharmacistprofile.objects.filter(phar_user=request.user).first()  # Replace with your relationship logic
+    return render(request, 'pharmacist_home.html', {'pharmacist': pharmacist})
+
+
+
+
+
+
+
+def Pharmacist_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        contact_number = request.POST.get('contact_number')
+        address = request.POST.get('address', '')
+        pharmacy_name = request.POST.get('pharmacy_name')
+        emergency_contact = request.POST.get('emergency_contact', '')
+
+        # Assuming `request.user` is linked to a `CustomUser`
+        pharmacist_profile = Pharmacistprofile.objects.create(
+            phar_user=request.user,
+            name=name,
+            contact_number=contact_number,
+            address=address,
+            pharmacy_name=pharmacy_name,
+            emergency_contact=emergency_contact
+        )
+        return redirect('pharmacist_home')  
+
+    return render(request, 'Pharmacist_create.html')
+
+
+
+def pharmacist_detail(request, pk):
+    pharmacist = get_object_or_404(Pharmacistprofile, pk=pk)
+    return render(request, 'pharmacist_profile.html', {'pharmacist': pharmacist})
+
+
+
 
 
 
@@ -392,28 +506,32 @@ def edit_doctor(request, pk):
 
 
 
-
 def schedule_create(request):
     if request.method == 'POST':
         specialization = request.POST.get('specialization')
         doctor_id = request.POST.get('doctor')
-        shifts = request.POST.get('shifts')
-        day = request.POST.get('day')
+        shifts_list = request.POST.getlist('shifts[]')
+        days_list = request.POST.getlist('day[]')
 
         doctor = Doctor.objects.get(id=doctor_id)
 
-        # Validate and create a new Schedule
-        if not Schedule.objects.filter(doctor=doctor, day=day, shifts=shifts, specialization=specialization).exists():
-            schedule = Schedule(
-                specialization=specialization,
-                doctor=doctor,
-                shifts=shifts,
-                day=day
-            )
-            schedule.save()
-            return redirect('schedule_list')
-        else:
-            return HttpResponse("Schedule for the selected doctor, day, and shift already exists.", status=400)
+        # Iterate through shifts and days to create schedules
+        for shifts, day in zip(shifts_list, days_list):
+            if not Schedule.objects.filter(doctor=doctor, day=day, shifts=shifts, specialization=specialization).exists():
+                schedule = Schedule(
+                    specialization=specialization,
+                    doctor=doctor,
+                    shifts=shifts,
+                    day=day
+                )
+                schedule.save()
+            else:
+                return HttpResponse(
+                    f"Schedule for {shifts} shift on {day} for the selected doctor already exists.",
+                    status=400
+                )
+
+        return redirect('schedule_list')
 
     # Passing choices and doctors to the template
     doctors = Doctor.objects.all()
@@ -431,9 +549,66 @@ def schedule_create(request):
 
 
 
+
 def schedule_list(request):
+    query_doctor = request.GET.get('doctor', '').strip()
+    query_day = request.GET.get('day', '').strip().lower()  # Clean up the input and match the case
+    query_specialization = request.GET.get('specialization', '').strip()
+
+    # Initialize queryset
     schedules = Schedule.objects.all()
-    return render(request, 'schedule_list.html', {'schedules': schedules})
+
+    # Apply filters if the query parameters are provided
+    if query_doctor:
+        schedules = schedules.filter(doctor__first_name__icontains=query_doctor)
+
+    if query_day:
+        schedules = schedules.filter(day__iexact=query_day)  # Use iexact for exact day match (case insensitive)
+
+    if query_specialization:
+        schedules = schedules.filter(doctor__specialization__icontains=query_specialization)
+
+    context = {
+        'schedules': schedules,
+        'query_doctor': query_doctor,
+        'query_day': query_day,
+        'query_specialization': query_specialization,
+    }
+    return render(request, 'schedule_list.html', context)
+
+
+
+
+
+def schedule_edit(request, pk):
+    schedule = get_object_or_404(Schedule, pk=pk)
+
+    if request.method == 'POST':
+        specialization = request.POST.get('specialization')
+        doctor_id = request.POST.get('doctor')
+        shifts = request.POST.get('shifts')
+        day = request.POST.get('day')
+
+        doctor = get_object_or_404(Doctor, id=doctor_id)
+
+        # Update the schedule object
+        schedule.specialization = specialization
+        schedule.doctor = doctor
+        schedule.shifts = shifts
+        schedule.day = day
+        schedule.save()
+
+        return redirect('schedule_list')
+
+    # Pass the schedule object to the template for editing
+    doctors = Doctor.objects.all()
+    context = {
+        'schedule': schedule,
+        'doctors': doctors,
+        'shift_choices': Schedule.SHIFTS,
+        'day_choices': Schedule.DAYS_OF_WEEK,
+    }
+    return render(request, 'schedule_edit.html', context)
 
 
 
@@ -679,6 +854,9 @@ def prescription_detail(request, prescription_id):
 
 
 
+
+
+
 def create_medicine(request):
     # Fetch all medicines from the database
     medicines = Medicine.objects.all()
@@ -815,19 +993,26 @@ def add_patient(request,id):
 
 
 
-def approve_user(request,id):
-    main = CustomUser.objects.get(id=id)
-    main.is_approved = True
-    main.save()
-    return redirect('admin_home')
+def approve_user(request, id):
+    try:
+        main = CustomUser.objects.get(id=id)
+        main.is_approved = True
+        main.save()
+        return redirect('admin_home')
+    except CustomUser.DoesNotExist:
+        # Handle the case where the user does not exist
+        return redirect('admin_home')
 
-
-
-def remove_user(request,id):
-    main = CustomUser.objects.get(id=id)
+def remove_user(request, id):
+    try:
+        main = CustomUser.objects.get(id=id)
+        main.delete()
+        return redirect('admin_home')
+    except CustomUser.DoesNotExist:
+        # Handle the case where the user does not exist
+        return redirect('admin_home')
     
-    main.delete()
-    return redirect('admin_home')
+
 
 
 

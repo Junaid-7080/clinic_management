@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Edit Schedule</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="specialization">Specialization:</label>
+        <input type="text" id="specialization" name="specialization" value="{{ schedule.specialization }}" required>
+
+        <label for="doctor">Doctor:</label>
+        <select id="doctor" name="doctor" required>
+            {% for doctor in doctors %}
+                <option value="{{ doctor.id }}" {% if doctor == schedule.doctor %}selected{% endif %}>
+                    {{ doctor.first_name }} ({{ doctor.specialization }})
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="shifts">Shift:</label>
+        <select id="shifts" name="shifts" required>
+            {% for shift in shift_choices %}
+                <option value="{{ shift.0 }}" {% if shift.0 == schedule.shifts %}selected{% endif %}>
+                    {{ shift.1 }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="day">Day:</label>
+        <select id="day" name="day" required>
+            {% for day in day_choices %}
+                <option value="{{ day.0 }}" {% if day.0 == schedule.day %}selected{% endif %}>
+                    {{ day.1 }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'schedule_list' %}"><button type="button">Cancel</button></a>
+    </form>
+</div>
+
+</body>
+</html>

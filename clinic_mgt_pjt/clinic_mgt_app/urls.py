@@ -17,6 +17,7 @@ urlpatterns =[
 
 
     path('admin_home/',views.admin_home,name='admin_home'),
+    
 
     path('doctor_list/',views.doctor_list,name='doctor_list'),
     path('delete_doctor/',views.delete_doctor,name='delete_doctor'),
@@ -27,8 +28,9 @@ urlpatterns =[
     path('receptionist_list/', views.receptionist_list, name='receptionist_list'),
     path('delete_receptionist/', views.delete_receptionist, name='delete_receptionist'),
 
+    path('pharmacist_list/', views.pharmacist_list, name='pharmacist_list'),
 
-
+    
     path('patient_home/',views.patient_home,name='patient_home'),
     path('patient_create/',views.patient_create,name='patient_create'),
     path('patients/<int:pk>/', views.patient_detail, name='patient_detail'),
@@ -44,8 +46,12 @@ urlpatterns =[
     path('doctor/<int:pk>/', views.doctor_detail, name='doctor_detail'),
     path('doctor/edit/<int:pk>/', views.edit_doctor, name='doctor_edit'),
 
+    
+
+
     path('schedule/create/', views.schedule_create, name='schedule_create'),
     path('schedule/list/', views.schedule_list, name='schedule_list'),
+    path('schedule/edit/<int:pk>/', views.schedule_edit, name='schedule_edit'),
 
 
     path('appointments/create/', views.create_appointment, name='create_appointment'),
@@ -67,5 +73,9 @@ urlpatterns =[
     path('verfy_otp/<int:id>/',views.otp_verify,name='otp_verify'),
     path('passwordreset/<int:id>/',views.password_reset,name='password_reset'),
     
+    path('pharmacist_home',views.pharmacist_home,name='pharmacist_home'),
+    path('Pharmacist_create/',views.Pharmacist_create,name='Pharmacist_create'),
+    path('pharmacist/<int:pk>/', views.pharmacist_detail, name='pharmacist_detail'),
+
 
 ]

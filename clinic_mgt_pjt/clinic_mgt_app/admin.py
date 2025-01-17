@@ -32,6 +32,8 @@ admin.site.register(ReceptionistProfile)
 
 admin.site.register(Doctor)
 
+admin.site.register(Pharmacistprofile)
+
 admin.site.register(Appointment)
 
 admin.site.register(Schedule)

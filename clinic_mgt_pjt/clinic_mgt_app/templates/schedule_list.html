@@ -13,20 +13,42 @@
         }
 
         header {
-            background-color: #4CAF50;
+            background-color: #007BFF;
             color: white;
             text-align: center;
             padding: 15px;
-            font-size: 24px;
         }
 
         .container {
-            width: 80%;
+            width: 90%;
             margin: 20px auto;
             padding: 20px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], button {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
 
         table {
@@ -42,7 +64,7 @@
         }
 
         th {
-            background-color: #4CAF50;
+            background-color: #007BFF;
             color: white;
         }
 
@@ -50,86 +72,54 @@
             background-color: #f1f1f1;
         }
 
-        .table-header {
-            margin-bottom: 20px;
-        }
-
-        .table-footer {
+        .no-results {
             text-align: center;
             margin-top: 20px;
-            font-size: 14px;
             color: #888;
-        }
-
-        .delete-button {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .delete-button:hover {
-            background-color: darkred;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                width: 90%;
-            }
-
-            table {
-                font-size: 14px;
-            }
         }
     </style>
 </head>
 <body>
-
     <header>
         <h1>Schedule List</h1>
     </header>
 
     <div class="container">
-        <div class="table-header">
-            <h2>Doctor's Schedule</h2>
-        </div>
+        <form method="GET">
+            <input type="text" name="doctor" placeholder="Search by doctor" value="{{ query_doctor }}">
+            <input type="text" name="day" placeholder="Search by day" value="{{ query_day }}">
+            <input type="text" name="specialization" placeholder="Search by specialization" value="{{ query_specialization }}">
+            <button type="submit">Search</button>
+        </form>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Specialization</th>
-                    <th>Doctor</th>
-                    <th>Shift</th>
-                    <th>Day</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for schedule in schedules %}
+        {% if schedules %}
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ schedule.specialization }}</td>
-                        <td>{{ schedule.doctor.first_name }}</td>
-                        <td>{{ schedule.shifts }}</td>
-                        <td>{{ schedule.day }}</td>
-                        <td>
-                            <form method="POST" action="{% url 'recep_home' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
-                                <button type="submit" name="delete_schedule" class="delete-button">Delete</button>
-                            </form>
-                        </td>
+                        <th>Doctor Name</th>
+                        <th>Specialization</th>
+                        <th>Day</th>
+                        <th>Shift</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="table-footer">
-            <p>&copy; 2024 Clinic Management System. All Rights Reserved.</p>
-        </div>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                        <tr>
+                            <td>{{ schedule.doctor.first_name }} {{ schedule.doctor.last_name }}</td>
+                            <td>{{ schedule.doctor.specialization }}</td>
+                            <td>{{ schedule.day }}</td>
+                            <td>{{ schedule.shifts }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-results">No schedules found matching the criteria.</p>
+        {% endif %}
     </div>
-
 </body>
 </html>
+
+
+
 

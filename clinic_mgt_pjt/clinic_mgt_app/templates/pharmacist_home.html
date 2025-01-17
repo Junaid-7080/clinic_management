@@ -1,0 +1,103 @@
+{% extends 'pharmacist_base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p>Role: Pharmacist</p>
+    
+    <div class="dashboard-section">
+        <h2>Dashboard Overview</h2>
+        <div class="stats">
+            <div class="stat-item">
+                <h3>Total Unfulfilled Prescriptions</h3>
+                <p>{{ total_prescriptions }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="prescription-list">
+        <h2>Unfulfilled Prescriptions</h2>
+        {% if Prescription %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Doctor</th>
+                    <th>Patient</th>
+                    <th>Medicines</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prescription in prescriptions %}
+                <tr>
+                    <td>{{ prescription.id }}</td>
+                    <td>{{ prescription.doctor.username }}</td>
+                    <td>{{ prescription.patient.username }}</td>
+                    <td>
+                        {% for medicine in prescription.medicines.all %}
+                            <span>{{ medicine.name }}</span><br>
+                        {% empty %}
+                            <span>No medicines assigned</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{% url 'mark_prescription_fulfilled' prescription.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn">Mark Fulfilled</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No unfulfilled prescriptions at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .container {
+        margin: 20px;
+    }
+    .dashboard-section {
+        margin-bottom: 20px;
+    }
+    .stats {
+        display: flex;
+        gap: 20px;
+    }
+    .stat-item {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+    .prescription-list table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .prescription-list th, .prescription-list td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .prescription-list th {
+        background-color: #f4f4f4;
+    }
+    .action-btn {
+        padding: 5px 10px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .action-btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock content %}
+

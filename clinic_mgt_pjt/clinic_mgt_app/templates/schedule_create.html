@@ -5,57 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Schedule</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f9;
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f4f9;
+    }
+    .form-container {
+        background: #ffffff;
+        padding: 20px 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    .form-container h1 {
+        text-align: center;
+        color: #333333;
+        margin-bottom: 20px;
+    }
+    .form-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555555;
+    }
+    .form-container select,
+    .form-container input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .form-container button {
+        padding: 10px;
+        background-color: #007bff;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .form-container button:hover {
+        background-color: #0056b3;
+    }
+    .shift-day-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .shift-day-group select {
+        flex: 1;
+    }
+    .shift-day-group button {
+        background-color: #dc3545;
+        color: white;
+        font-size: 14px;
+    }
+    .shift-day-group button:hover {
+        background-color: #c82333;
+    }
+    @media (max-width: 768px) {
+        .shift-day-group {
+            flex-direction: column;
+            align-items: flex-start;
         }
-        .form-container {
-            background: #ffffff;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .shift-day-group select,
+        .shift-day-group button {
             width: 100%;
-            max-width: 400px;
         }
-        .form-container h1 {
-            text-align: center;
-            color: #333333;
-            margin-bottom: 20px;
-        }
-        .form-container label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555555;
-        }
-        .form-container select,
-        .form-container input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #dddddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        .form-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .form-container button:hover {
-            background-color: #0056b3;
-        }
+    }
+
     </style>
     <script>
         function updateSpecialization() {
@@ -69,6 +97,35 @@
             } else {
                 specializationField.value = '';
             }
+        }
+
+        function addShiftDayField() {
+            const container = document.getElementById('shift-day-container');
+            const newFieldSet = document.createElement('div');
+            newFieldSet.classList.add('shift-day-group');
+
+            newFieldSet.innerHTML = `
+                <label for="shifts">Shifts:</label>
+                <select name="shifts[]" required>
+                    {% for shift in shift_choices %}
+                        <option value="{{ shift.0 }}">{{ shift.1 }}</option>
+                    {% endfor %}
+                </select>
+                
+                <label for="day">Day:</label>
+                <select name="day[]" required>
+                    {% for day in day_choices %}
+                        <option value="{{ day.0 }}">{{ day.1 }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" onclick="removeField(this)">Remove</button>
+            `;
+
+            container.appendChild(newFieldSet);
+        }
+
+        function removeField(button) {
+            button.parentElement.remove();
         }
     </script>
 </head>
@@ -89,25 +146,27 @@
             <label for="specialization">Specialization:</label>
             <input type="text" id="specialization" name="specialization" readonly required>
 
-            <label for="shifts">Shifts:</label>
-            <select name="shifts" id="shifts" required>
-                {% for shift in shift_choices %}
-                    <option value="{{ shift.0 }}">{{ shift.1 }}</option>
-                {% endfor %}
-            </select>
+            <div id="shift-day-container">
+                <div class="shift-day-group">
+                    <label for="shifts">Shifts:</label>
+                    <select name="shifts[]" required>
+                        {% for shift in shift_choices %}
+                            <option value="{{ shift.0 }}">{{ shift.1 }}</option>
+                        {% endfor %}
+                    </select>
 
-            <label for="day">Day:</label>
-            <select name="day" id="day" required>
-                {% for day in day_choices %}
-                    <option value="{{ day.0 }}">{{ day.1 }}</option>
-                {% endfor %}
-            </select>
+                    <label for="day">Day:</label>
+                    <select name="day[]" required>
+                        {% for day in day_choices %}
+                            <option value="{{ day.0 }}">{{ day.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
 
+            <button type="button" onclick="addShiftDayField()">Add Shift & Day</button>
             <button type="submit">Create Schedule</button>
         </form>
     </div>
 </body>
 </html>
-
-
-
