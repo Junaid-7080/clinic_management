@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Successful</h1>
+
+    <div class="message">
+        Your payment has been successfully processed.
+    </div>
+
+    <!-- Link to return to the payment page -->
+    <a href="{% url 'payment_page' %}">Back to Payment Page</a>
+</body>
+</html>
+

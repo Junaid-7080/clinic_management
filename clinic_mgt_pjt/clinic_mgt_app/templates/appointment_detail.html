@@ -14,37 +14,40 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 700px;
             margin: 50px auto;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            padding: 25px;
         }
 
         h1,
         h2,
         h3 {
-            font-size: 24px;
+            font-size: 26px;
             text-align: center;
             margin-bottom: 20px;
             color: #333;
         }
 
         .details,
-        .medicine-list {
+        .medicine-list,
+        .test-list {
             margin: 20px 0;
         }
 
         .details p,
-        .medicine-item p {
+        .medicine-item p,
+        .test-item p {
             margin: 10px 0;
             font-size: 16px;
             color: #555;
         }
 
         .details strong,
-        .medicine-item strong {
+        .medicine-item strong,
+        .test-item strong {
             font-weight: bold;
             color: #333;
         }
@@ -52,24 +55,26 @@
         .token {
             background-color: #007bff;
             color: #fff;
-            font-size: 18px;
-            padding: 10px;
+            font-size: 20px;
+            padding: 15px;
             text-align: center;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         button {
             display: block;
             width: 100%;
-            padding: 10px;
-            background-color: #007bff;
+            padding: 12px;
+            background-color: #28a745;
             color: #fff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             margin-top: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         button a {
@@ -78,24 +83,52 @@
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #218838;
         }
 
         .footer {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
             color: #777;
             font-size: 14px;
         }
 
-        .medicine-item {
-            padding: 10px;
+        .medicine-item,
+        .test-item {
+            padding: 15px;
             border-bottom: 1px solid #ddd;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+        }
+
+        .Presc {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .prescription-links a {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .prescription-links a:hover {
+            background-color: #0056b3;
+        }
+
+        .no-prescription {
+            color: #e74c3c;
+            text-align: center;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
+
     <!-- Appointment Details Section -->
     <div class="container">
         <div class="token">Token Number: {{ appointment.token }}</div>
@@ -107,18 +140,20 @@
             <p><strong>Schedule:</strong> {{ appointment.schedule.shifts }}</p>
             <p><strong>Time:</strong> {{ appointment.schedule.day }}</p>
         </div>
-        {% if doctor %}
-    
-            <a href="{% url 'create_prescription' appointment.id %}">Create Prescription</a>
-    
-        {% endif %}
-        <div class="footer">For any issues, please contact the clinic reception.</div>
+
+        <div class="prescription-links">
+            {% if doctor %}
+            <a href="{% if appointment %}{% url 'create_prescription' appointment.id %}{% else %}#{% endif %}">Create Prescription</a> |
+            <a href="{% url 'patient_appointments' pk=patient.id %}" class="btn btn-secondary">Previous Appointments List</a>
+            {% endif %}
+        </div>
     </div>
-{% if prescription %}
+
+    {% if prescription %}
     <!-- Prescription Details Section -->
     <div class="container">
         <h2>Prescription Details</h2>
-        
+
         <!-- Patient and Doctor Details -->
         <div class="details">
             <p><strong>Patient:</strong> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</p>
@@ -131,19 +166,20 @@
         <h3>Medicines</h3>
         <div class="medicine-list">
             {% if medicines %}
-                <ul>
-                    {% for medicine in medicines %}
-                        <li class="medicine-item">
-                            <p><strong>Medicine:</strong> {{ medicine.medicine.name }}</p>
-                            <p><strong>Dose:</strong> {{ medicine.medicine.dose_set.first.dose }}</p>
-                            <p><strong>Doses Per Day:</strong> {{ medicine.per_day }}</p>
-                            <p><strong>Duration:</strong> {{ medicine.duration_days }} days</p>
-                            <p><strong>Cost:</strong> ₹{{ medicine.medicine.dose_set.first.cost }} per dose</p>
-                        </li>
-                    {% endfor %}
-                </ul>
+            <ul>
+                {% for medicine in medicines %}
+                <li class="medicine-item">
+                    <p><strong>Medicine:</strong> {{ medicine.medicine.name }}</p>
+                    <p><strong>Dose:</strong> {{ medicine.medicine.dose_set.first.dose }}</p>
+                    <p><strong>Doses Per Day:</strong> {{ medicine.per_day }}</p>
+                    <p><strong>Duration:</strong> {{ medicine.duration_days }} days</p>
+                    <p><strong>Cost:</strong> ₹{{ medicine.medicine.dose_set.first.cost }} per dose</p>
+                </li>
+                {% endfor %}
+            </ul>
+            <p><strong>Total Medicine Cost:</strong> ₹{{ total_medicine_cost }}</p>
             {% else %}
-                <p>No medicines prescribed.</p>
+            <p class="no-prescription">No medicines prescribed.</p>
             {% endif %}
         </div>
 
@@ -151,30 +187,40 @@
         <h3>Tests</h3>
         <div class="test-list">
             {% if tests %}
-                <ul>
-                    {% for test in tests %}
-                        <li class="test-item">
-                            <p><strong>Test Name:</strong> {{ test.test.name }}</p>
-                            <p><strong>Cost:</strong> ₹{{ test.test.cost }} per test</p>
-                        </li>
-                    {% endfor %}
-                </ul>
+            <ul>
+                {% for test in tests %}
+                <li class="test-item">
+                    <p><strong>Test Name:</strong> {{ test.test.name }}</p>
+                    <p><strong>Cost:</strong> ₹{{ test.test.cost }} per test</p>
+                </li>
+                {% endfor %}
+            </ul>
+            <p><strong>Total Test Cost:</strong> ₹{{ total_test_cost }}</p>
             {% else %}
-                <p>No tests prescribed.</p>
+            <p class="no-prescription">No tests prescribed.</p>
             {% endif %}
         </div>
 
+        <!-- Total Cost Section -->
+        <h3>Total Cost</h3>
+        <p><strong>Total Payment:</strong> ₹{{ total_cost }}</p>
     </div>
-{% else %}
-    <p>No prescription found for this appointment.</p>
-{% endif %}
+    {% else %}
+    <p class="no-prescription">No prescription found for this appointment.</p>
+    {% endif %}
 
-{% if patient %}
-<button type="submit">payment</button>
-{% endif %}
+    {% if patient %}
+    <form method="post" action="{% url 'process_payment' %}">
+        {% csrf_token %}
+        <button type="submit">Payment</button>
+    </form>
+    {% endif %}
 
+    {% if payment_success %}
+    <p>Payment successfully processed.</p>
+    {% endif %}
 
-    
+    <div class="footer">For any issues, please contact the clinic reception.</div>
 
 </body>
 

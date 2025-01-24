@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import *
 from datetime import datetime
 import json
+from django.db.models import Q
 from .models import CustomUser
 from django.http import HttpResponse
 from django.http import Http404
@@ -198,8 +199,8 @@ def delete_receptionist(request):
     
 
 def pharmacist_list(request):
-    pharmacist = Pharmacistprofile.objects.all()
-    context = {'pharmacist': pharmacist}
+    pharmacists = Pharmacistprofile.objects.all()
+    context = {'pharmacists': pharmacists}
 
     return render(request,'pharmacist_list.html',context)
 
@@ -551,30 +552,28 @@ def schedule_create(request):
 
 
 def schedule_list(request):
-    query_doctor = request.GET.get('doctor', '').strip()
-    query_day = request.GET.get('day', '').strip().lower()  # Clean up the input and match the case
-    query_specialization = request.GET.get('specialization', '').strip()
+    query = request.GET.get('query', '').strip().lower()  # Single input field for all queries
 
     # Initialize queryset
     schedules = Schedule.objects.all()
 
-    # Apply filters if the query parameters are provided
-    if query_doctor:
-        schedules = schedules.filter(doctor__first_name__icontains=query_doctor)
-
-    if query_day:
-        schedules = schedules.filter(day__iexact=query_day)  # Use iexact for exact day match (case insensitive)
-
-    if query_specialization:
-        schedules = schedules.filter(doctor__specialization__icontains=query_specialization)
+    if query:
+        # Apply filters: search across doctor name, specialization, and day
+        schedules = schedules.filter(
+            Q(doctor__first_name__icontains=query) |
+            Q(doctor__specialization__icontains=query) |
+            Q(day__icontains=query)  # Adjust as needed for your `day` field
+        )
 
     context = {
         'schedules': schedules,
-        'query_doctor': query_doctor,
-        'query_day': query_day,
-        'query_specialization': query_specialization,
+        'query': query,
     }
     return render(request, 'schedule_list.html', context)
+
+
+
+
 
 
 
@@ -609,6 +608,15 @@ def schedule_edit(request, pk):
         'day_choices': Schedule.DAYS_OF_WEEK,
     }
     return render(request, 'schedule_edit.html', context)
+
+
+def delete_schedule(request, id):
+    schedule = get_object_or_404(Schedule, id=id)
+    if request.user.is_authenticated:  
+        schedule.delete()
+        messages.success(request, "Schedule deleted successfully.")  
+
+    return redirect('schedule_list')  
 
 
 
@@ -673,7 +681,6 @@ def create_appointment(request):
 
 
 
-
 def appointment_detail(request, pk):
     # Get the appointment instance
     appointment = get_object_or_404(Appointment, pk=pk)
@@ -682,18 +689,21 @@ def appointment_detail(request, pk):
     patient = appointment.patient
 
     # Check if the logged-in user is a doctor
-    doctor = Doctor.objects.filter(doctor_user=request.user).first()  # Check if the user is a doctor
+    doctor = Doctor.objects.filter(doctor_user=request.user).first()
 
-    # Fetch the prescription related to the appointment (if it exists)
+    # Fetch the prescription related to the appointment
     prescription = Prescription.objects.filter(appointment=appointment).first()
 
-    if prescription:
-        # Fetch related medicines and tests if a prescription exists
-        medicines = PrescriptionMedicine.objects.filter(prescription=prescription)
-        tests = PrescriptionTest.objects.filter(prescription=prescription)
-    else:
-        medicines = []
-        tests = []
+    # Prepare data for medicines and tests
+    medicines = PrescriptionMedicine.objects.filter(prescription=prescription) if prescription else []
+    tests = PrescriptionTest.objects.filter(prescription=prescription) if prescription else []
+
+    # Calculate the total cost for medicines and tests
+    total_medicine_cost = sum(medicine.medicine.dose_set.first().cost for medicine in medicines)
+    total_test_cost = sum(test.test.cost for test in tests)
+
+    # Calculate the total cost
+    total_cost = total_medicine_cost + total_test_cost
 
     # Context for the template
     context = {
@@ -703,9 +713,39 @@ def appointment_detail(request, pk):
         'prescription': prescription,
         'medicines': medicines,
         'tests': tests,
+        'total_medicine_cost': total_medicine_cost,
+        'total_test_cost': total_test_cost,
+        'total_cost': total_cost,
     }
 
     return render(request, 'appointment_detail.html', context)
+
+
+
+def patient_appointments(request, pk):
+    # Get the patient using the provided primary key
+    patient = get_object_or_404(Patient, pk=pk)
+
+    # Check if the logged-in user is a doctor
+    doctor = Doctor.objects.filter(doctor_user=request.user).first()
+
+    # Fetch all appointments for the patient, filtering by doctor if the user is a doctor
+    appointments = Appointment.objects.filter(patient=patient)
+
+    if doctor:
+        # If the logged-in user is a doctor, filter appointments by doctor
+        appointments = appointments.filter(doctor=doctor)
+
+    # Order appointments by date (most recent first)
+    appointments = appointments.order_by('-date')
+
+    # Context for the template
+    context = {
+        'patient': patient,
+        'appointments': appointments,
+    }
+
+    return render(request, 'patient_appointments.html', context)
 
 
 
@@ -845,10 +885,31 @@ def create_prescription(request, appointment_id):
 
 
 
+
 def prescription_detail(request, prescription_id):
-    prescription = get_object_or_404(Prescription, id=prescription_id)
+    # Fetch the current prescription and related details
+    prescription = get_object_or_404(
+        Prescription.objects.select_related('patient', 'doctor', 'appointment'),
+        id=prescription_id
+    )
     medicines = PrescriptionMedicine.objects.filter(prescription=prescription)
-    return render(request, 'prescription_detail.html', {'prescription': prescription, 'medicines': medicines})
+    tests = PrescriptionTest.objects.filter(prescription=prescription)
+
+    # Fetch previous prescriptions for the same patient and doctor
+    previous_prescriptions = Prescription.objects.filter(
+        patient=prescription.patient,
+        doctor=prescription.doctor
+    ).exclude(id=prescription.id).filter(date__lt=prescription.date).order_by('-date')
+
+    context = {
+        'prescription': prescription,
+        'medicines': medicines,
+        'tests': tests,
+        'previous_prescriptions': previous_prescriptions,  # Pass previous prescriptions to template
+    }
+
+    return render(request, 'prescription_detail.html', context)
+
 
 
 
@@ -858,6 +919,25 @@ def prescription_detail(request, prescription_id):
 
 
 def create_medicine(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        if name:
+            Medicine.objects.create(name=name)
+            return redirect('pharmacist_home')  # Redirect to a medicine list or any relevant page
+    return render(request, 'create_medicine.html')
+
+
+def medicine_list(request):
+    medicines = Medicine.objects.all()
+    return render(request, 'medicine_list.html', {'medicines': medicines})
+
+
+
+
+
+
+
+def create_dose_medicin(request):
     # Fetch all medicines from the database
     medicines = Medicine.objects.all()
     
@@ -875,7 +955,7 @@ def create_medicine(request):
         
         return redirect('medicine_detail', medicine_id=medicine.id)  # Redirect after successful action
 
-    return render(request, 'create_medicine.html', {'medicines': medicines})
+    return render(request, 'create_dose_medicin.html', {'medicines': medicines})
 
 
 
@@ -1011,9 +1091,25 @@ def remove_user(request, id):
     except CustomUser.DoesNotExist:
         # Handle the case where the user does not exist
         return redirect('admin_home')
+
+
+
+
+def payment_page(request):
+    # Example: Retrieve patient information from the database
+    patients = Patient.objects.all()  # Replace `Patient` with your actual model name
+
+    return render(request, 'payment.html', {'patients': patients})
+
+def process_payment(request):
+    if request.method == 'POST':
+        # Perform payment processing logic here
+
+        # Redirect back to the payment page with a success message
+        return render(request, 'payment_success.html', {'payment_success': True, 'patients': Patient.objects.all()})
+
+    return redirect('payment_page')  # Replace with the correct name of your payment page view
     
-
-
 
 
 

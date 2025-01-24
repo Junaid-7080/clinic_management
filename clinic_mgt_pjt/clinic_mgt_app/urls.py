@@ -29,6 +29,7 @@ urlpatterns =[
     path('delete_receptionist/', views.delete_receptionist, name='delete_receptionist'),
 
     path('pharmacist_list/', views.pharmacist_list, name='pharmacist_list'),
+    path('delete_pharmacist/', views.delete_pharmacist, name='delete_pharmacist'),
 
     
     path('patient_home/',views.patient_home,name='patient_home'),
@@ -52,6 +53,7 @@ urlpatterns =[
     path('schedule/create/', views.schedule_create, name='schedule_create'),
     path('schedule/list/', views.schedule_list, name='schedule_list'),
     path('schedule/edit/<int:pk>/', views.schedule_edit, name='schedule_edit'),
+    path('schedule/delete/<int:id>/', views.delete_schedule, name='delete_schedule'),
 
 
     path('appointments/create/', views.create_appointment, name='create_appointment'),
@@ -62,9 +64,13 @@ urlpatterns =[
 
     path('prescription/create/<int:appointment_id>/', views.create_prescription, name='create_prescription'),
     path('prescription/<int:prescription_id>/', views.prescription_detail, name='prescription_detail'),
+    
     path('medicine/create/', views.create_medicine, name='create_medicine'),
+    path('medicine/list/', views.medicine_list, name='medicine_list'),
+    path('medicine/dose/create/', views.create_dose_medicin, name='create_dose_medicin'),
     path('medicine/<int:medicine_id>/', views.medicine_detail, name='medicine_detail'),
     path('medicine/<int:medicine_id>/create_dose/', views.create_dose, name='create_dose'),
+    
     path('test/create/', views.create_test, name='create_test'),
     path('test/<int:test_id>/', views.test_detail, name='test_detail'),
 
@@ -76,6 +82,13 @@ urlpatterns =[
     path('pharmacist_home',views.pharmacist_home,name='pharmacist_home'),
     path('Pharmacist_create/',views.Pharmacist_create,name='Pharmacist_create'),
     path('pharmacist/<int:pk>/', views.pharmacist_detail, name='pharmacist_detail'),
+
+
+    path('appointments/patient/<int:pk>/', views.patient_appointments, name='patient_appointments'),
+
+    path('payment/', views.payment_page, name='payment_page'),
+    path('process_payment/', views.process_payment, name='process_payment'),
+
 
 
 ]

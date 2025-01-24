@@ -5,120 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule List</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        header {
-            background-color: #007BFF;
-            color: white;
-            text-align: center;
-            padding: 15px;
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .container {
             width: 90%;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
         }
 
-        form {
+        h1 {
+            text-align: center;
             margin-bottom: 20px;
+            color: #333333;
         }
 
-        input[type="text"], button {
-            padding: 10px;
-            margin-right: 10px;
+        .search-box {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-box input {
+            width: 80%;
+            padding: 15px;
+            font-size: 16px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
+            border-radius: 30px;
+            outline: none;
+            transition: box-shadow 0.3s ease;
         }
 
-        button {
-            background-color: #007BFF;
+        .search-box input:focus {
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+
+        .search-box button {
+            padding: 15px;
+            font-size: 16px;
+            background-color: #007bff;
             color: white;
-            cursor: pointer;
             border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
-        button:hover {
+        .search-box button:hover {
             background-color: #0056b3;
         }
 
-        table {
+        .schedule-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            overflow-x: auto;
         }
 
-        th, td {
-            padding: 12px;
+        .schedule-table th, .schedule-table td {
+            padding: 15px;
+            border: 1px solid #ddd;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
 
-        th {
-            background-color: #007BFF;
+        .schedule-table th {
+            background-color: #007bff;
             color: white;
         }
 
-        tr:hover {
+        .schedule-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .schedule-table tr:hover {
             background-color: #f1f1f1;
         }
 
         .no-results {
             text-align: center;
+            color: #555;
+            font-size: 18px;
             margin-top: 20px;
-            color: #888;
         }
+
+        .delete-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .delete-button:hover {
+            background-color: darkred;
+        }
+
+        @media (max-width: 768px) {
+            .search-box input {
+                width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body>
-    <header>
-        <h1>Schedule List</h1>
-    </header>
-
     <div class="container">
-        <form method="GET">
-            <input type="text" name="doctor" placeholder="Search by doctor" value="{{ query_doctor }}">
-            <input type="text" name="day" placeholder="Search by day" value="{{ query_day }}">
-            <input type="text" name="specialization" placeholder="Search by specialization" value="{{ query_specialization }}">
-            <button type="submit">Search</button>
-        </form>
+        <h1>Schedule List</h1>
+
+        <div class="search-box">
+            <form method="get">
+                <input 
+                    type="text" 
+                    name="query" 
+                    placeholder="Search by doctor name, specialization, or day" 
+                    value="{{ query|default:'' }}">
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
 
         {% if schedules %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Doctor Name</th>
-                        <th>Specialization</th>
-                        <th>Day</th>
-                        <th>Shift</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for schedule in schedules %}
-                        <tr>
-                            <td>{{ schedule.doctor.first_name }} {{ schedule.doctor.last_name }}</td>
-                            <td>{{ schedule.doctor.specialization }}</td>
-                            <td>{{ schedule.day }}</td>
-                            <td>{{ schedule.shifts }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Specialization</th>
+                    <th>Day</th>
+                    <th>Shift</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <td>{{ schedule.doctor.first_name }}</td>
+                    <td>{{ schedule.doctor.specialization }}</td>
+                    <td>{{ schedule.day }}</td>
+                    <td>{{ schedule.shifts }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_schedule' schedule.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="no-results">No schedules found matching the criteria.</p>
+        <p class="no-results">No schedules found.</p>
         {% endif %}
     </div>
 </body>
 </html>
+
+
+
+
 
 
 

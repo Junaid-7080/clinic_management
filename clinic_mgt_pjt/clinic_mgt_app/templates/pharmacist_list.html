@@ -102,7 +102,7 @@
                     <th>Id</th>
                     <th>Pharmacist Name</th>
                     <th>Phone Number</th>
-                    <th>Email</th>
+                    <th>Address</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -110,9 +110,9 @@
                 {% for pharmacist in pharmacists %}
                     <tr>
                         <td>{{ pharmacist.id }}</td>
-                        <td>{{ pharmacist.first_name }} {{ pharmacist.last_name }}</td>
-                        <td>{{ pharmacist.phone_number }}</td>
-                        <td>{{ pharmacist.email }}</td>
+                        <td>{{ pharmacist.name }} </td>
+                        <td>{{ pharmacist.contact_number }}</td>
+                        <td>{{ pharmacist.address }}</td>
                         <td>
                             <form method="POST" action="{% url 'delete_pharmacist' %}">
                                 {% csrf_token %}

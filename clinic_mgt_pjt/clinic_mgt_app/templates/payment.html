@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment</h1>
+
+    <!-- Check if there are any patients -->
+    {% if patients_data %}
+        <p>Appointments with the following patients:</p>
+        <ul>
+            {% for data in patients_data %}
+                <li>
+                    {{ data.patient.name }} - ID: {{ data.patient.id }} - 
+                    <strong>Total Cost: ₹{{ data.total_cost }}</strong>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Form to make payment -->
+        <form method="post" action="{% url 'process_payment' %}">
+            {% csrf_token %}
+            <button type="submit">Make Payment</button>
+        </form>
+
+    {% else %}
+        <p>No appointments found for patients to make payments.</p>
+    {% endif %}
+
+    <!-- Show success message after payment -->
+    {% if messages %}
+        <div class="message">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>
+
