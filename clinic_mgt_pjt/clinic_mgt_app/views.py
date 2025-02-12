@@ -19,11 +19,10 @@ from django.core.mail import send_mail
     
 
 
-
 def register(request):
     # Filter role choices based on the logged-in user's role
     if request.user.role == 1:  # Admin
-        filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name in ['Receptionist', 'Doctor','Pharmacist']]
+        filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name in ['Receptionist', 'Doctor', 'Pharmacist']]
     elif request.user.role == 2:  # Receptionist
         filter_ROLE_CHOICE = [(id, name) for id, name in ROLE_CHOICE if name == 'Patient']
     else:
@@ -47,7 +46,13 @@ def register(request):
                     role=role
                 )
                 user.save()
-                return redirect('login')
+                
+        
+                if role in [2, 3, 5]:  
+                    return redirect('admin_home')  
+                elif role == 4:  
+                    return redirect('recep_home')
+
             except ValueError as e:
                 return HttpResponse(str(e))
         else:
@@ -55,6 +60,8 @@ def register(request):
 
     context = {'role_choices': filter_ROLE_CHOICE}
     return render(request, 'register.html', context)
+
+
 
 
 
@@ -746,7 +753,6 @@ def patient_appointments(request, pk):
     }
 
     return render(request, 'patient_appointments.html', context)
-
 
 
 
