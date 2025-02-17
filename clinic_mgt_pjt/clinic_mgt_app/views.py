@@ -16,6 +16,7 @@ from itertools import groupby
 from operator import attrgetter
 import random
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required
     
 
 
@@ -116,7 +117,7 @@ def not_login(request):
     return render(request,'not_login.html')
 
 
-
+@login_required
 def admin_home(request):
     all_users = CustomUser.objects.all()
     receptionists = all_users.filter(role=2, is_approved=False)
@@ -145,17 +146,19 @@ def admin_home(request):
     return render(request, 'admin_home.html', context)
 
 
-
+@login_required
 def admin_profile_detail(request):
     admin_user = get_object_or_404(CustomUser, id=request.user.id)
     return render(request, 'admin_profile_detail.html', {'admin_user': admin_user})
 
 
-
+@login_required
 def doctor_list(request):
     doctors = Doctor.objects.all()
     return render(request, 'doctors_list.html', {'doctors': doctors})
 
+
+@login_required
 def delete_doctor(request):
     if request.method == "POST":
         doctor_id = request.POST.get('doctor_id')
@@ -165,6 +168,8 @@ def delete_doctor(request):
     
 
 
+
+@login_required
 def patient_list(request):
     patients = Patient.objects.all()  # Fetch all patient records
     context = {
@@ -176,7 +181,7 @@ def patient_list(request):
 
 
 
-
+@login_required
 def delete_patient(request):
     if request.method == "POST":
         patient_id = request.POST.get('patient_id')
@@ -186,7 +191,7 @@ def delete_patient(request):
     
 
 
-
+@login_required
 def receptionist_list(request):
     receptionists = ReceptionistProfile.objects.all()  
     context = {
@@ -196,7 +201,7 @@ def receptionist_list(request):
 
 
 
-
+@login_required
 def delete_receptionist(request):
     if request.method == "POST":
         receptionist_id = request.POST.get('receptionist_id')
@@ -205,6 +210,7 @@ def delete_receptionist(request):
         return redirect('receptionist_list')
     
 
+@login_required
 def pharmacist_list(request):
     pharmacists = Pharmacistprofile.objects.all()
     context = {'pharmacists': pharmacists}
@@ -212,6 +218,7 @@ def pharmacist_list(request):
     return render(request,'pharmacist_list.html',context)
 
 
+@login_required
 def delete_pharmacist(request):
     if request.method == "POST":
         pharmacist_id = request.POST.get('pharmacist_id')
@@ -223,7 +230,7 @@ def delete_pharmacist(request):
 
 
 
-
+@login_required
 def recep_home(request):
     
     doctors = Doctor.objects.all()
@@ -259,7 +266,7 @@ def recep_home(request):
 
 
 
-
+@login_required
 def create_receptionist_profile(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -287,12 +294,14 @@ def create_receptionist_profile(request):
 
 
 
-
+@login_required
 def receptionist_profile_detail(request, pk):
     receptionist_profile = ReceptionistProfile.objects.get(recp_user=request.user)
     return render(request, 'receptionist_profile_detail.html', {'receptionist_profile': receptionist_profile})
 
 
+
+@login_required
 def edit_receptionist_profile(request, pk):
     # Fetch the existing profile
     receptionist_profile = get_object_or_404(ReceptionistProfile, pk=pk, recp_user=request.user)
@@ -311,9 +320,8 @@ def edit_receptionist_profile(request, pk):
     return render(request, 'recp_pro_edit.html', {'receptionist_profile': receptionist_profile})
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import Pharmacistprofile
 
+@login_required
 def pharmacist_home(request):
     # Assuming there is a one-to-one relationship between the user and Pharmacistprofile
     pharmacist = Pharmacistprofile.objects.filter(phar_user=request.user).first()  # Replace with your relationship logic
@@ -324,7 +332,7 @@ def pharmacist_home(request):
 
 
 
-
+@login_required
 def Pharmacist_create(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -347,7 +355,7 @@ def Pharmacist_create(request):
     return render(request, 'Pharmacist_create.html')
 
 
-
+@login_required
 def pharmacist_detail(request, pk):
     pharmacist = get_object_or_404(Pharmacistprofile, pk=pk)
     return render(request, 'pharmacist_profile.html', {'pharmacist': pharmacist})
@@ -356,7 +364,7 @@ def pharmacist_detail(request, pk):
 
 
 
-
+@login_required
 def patient_home(request):
     # Retrieve the logged-in patient's profile
     patient = Patient.objects.filter(pat_user=request.user).first()
@@ -380,7 +388,7 @@ def patient_home(request):
 
 
 
-
+@login_required
 def patient_create(request):
     if request.method == 'POST':
         # Retrieve data from the form submission
@@ -419,12 +427,12 @@ def patient_create(request):
     
     return render(request,'patient_create.html')
 
-
+@login_required
 def patient_detail(request, pk):
     patient = get_object_or_404(Patient, pk=pk)  # Retrieve the specific patient by primary key
     return render(request, 'patient_detail.html', {'patient': patient})
 
-
+@login_required
 def doctor_home(request):
     # Fetch the doctor profile associated with the logged-in user
     doctor_profiles = Doctor.objects.filter(doctor_user=request.user)
@@ -444,14 +452,14 @@ def doctor_home(request):
     return render(request, 'doctor_home.html', context)
 
 
-
+@login_required
 def doctor_detail(request, pk):
     doctor = get_object_or_404(Doctor, pk=pk)
     return render(request, 'doctor_detail.html', {'doctor': doctor})
 
 
 
-
+@login_required
 def create_doctor(request):
     if request.method == 'POST':
         first_name = request.POST.get('first_name')
@@ -477,7 +485,7 @@ def create_doctor(request):
     return render(request, 'doctor_create.html')  # Render the creation template
 
 
-
+@login_required
 def edit_doctor(request, pk):
     doctor = get_object_or_404(Doctor, pk=pk)
 
@@ -513,7 +521,7 @@ def edit_doctor(request, pk):
     return render(request, 'doctor_edit.html', {'doctor': doctor})
 
 
-
+@login_required
 def schedule_create(request):
     if request.method == 'POST':
         specialization = request.POST.get('specialization')
@@ -557,7 +565,7 @@ def schedule_create(request):
 
 
 
-
+@login_required
 def schedule_list(request):
     query = request.GET.get('query', '').strip().lower()  # Single input field for all queries
 
@@ -585,7 +593,7 @@ def schedule_list(request):
 
 
 
-
+@login_required
 def schedule_edit(request, pk):
     schedule = get_object_or_404(Schedule, pk=pk)
 
@@ -617,6 +625,7 @@ def schedule_edit(request, pk):
     return render(request, 'schedule_edit.html', context)
 
 
+@login_required
 def delete_schedule(request, id):
     schedule = get_object_or_404(Schedule, id=id)
     if request.user.is_authenticated:  
@@ -628,7 +637,7 @@ def delete_schedule(request, id):
 
 
 
-
+@login_required
 def create_appointment(request):
     if request.method == 'POST':
         # Retrieve form data
@@ -687,7 +696,7 @@ def create_appointment(request):
     return render(request, 'create_appointment.html', context)
 
 
-
+@login_required
 def appointment_detail(request, pk):
     # Get the appointment instance
     appointment = get_object_or_404(Appointment, pk=pk)
@@ -728,7 +737,7 @@ def appointment_detail(request, pk):
     return render(request, 'appointment_detail.html', context)
 
 
-
+@login_required
 def patient_appointments(request, pk):
     # Get the patient using the provided primary key
     patient = get_object_or_404(Patient, pk=pk)
@@ -762,7 +771,7 @@ def patient_appointments(request, pk):
 
 
 
-
+@login_required
 def list_appointments(request):
     doctor_profiles = Doctor.objects.filter(doctor_user=request.user)
 
@@ -791,11 +800,11 @@ def list_appointments(request):
 
 
 
-
+@login_required
 def appoinment_conform(request):
     return render(request,'appoinment_conform.html')
 
-
+@login_required
 def appointment_delete(request, pk):
     print(f"Attempting to delete appointment with pk={pk}")
     appointment = get_object_or_404(Appointment, pk=pk)
@@ -815,7 +824,7 @@ def appointment_delete(request, pk):
 
 
 
-
+@login_required
 def create_prescription(request, appointment_id):
     medicines = Medicine.objects.all()
     doses = Dose.objects.all()
@@ -891,7 +900,7 @@ def create_prescription(request, appointment_id):
 
 
 
-
+@login_required
 def prescription_detail(request, prescription_id):
     # Fetch the current prescription and related details
     prescription = get_object_or_404(
@@ -923,7 +932,7 @@ def prescription_detail(request, prescription_id):
 
 
 
-
+@login_required
 def create_medicine(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -942,7 +951,7 @@ def medicine_list(request):
 
 
 
-
+@login_required
 def create_dose_medicin(request):
     # Fetch all medicines from the database
     medicines = Medicine.objects.all()
@@ -964,13 +973,13 @@ def create_dose_medicin(request):
     return render(request, 'create_dose_medicin.html', {'medicines': medicines})
 
 
-
+@login_required
 def medicine_detail(request, medicine_id):
     medicine = get_object_or_404(Medicine, id=medicine_id)
     doses = Dose.objects.filter(medicine=medicine)
     return render(request, 'medicine_detail.html', {'medicine': medicine, 'doses': doses})
 
-
+@login_required
 def create_dose(request, medicine_id):
     medicine = get_object_or_404(Medicine, id=medicine_id)
     if request.method == 'POST':
@@ -982,7 +991,7 @@ def create_dose(request, medicine_id):
 
     return render(request, 'create_dose.html', {'medicine': medicine})
 
-
+@login_required
 def create_test(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -992,7 +1001,7 @@ def create_test(request):
 
     return render(request, 'create_test.html')
 
-
+@login_required
 def test_detail(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     return render(request, 'test_detail.html', {'test': test})
@@ -1024,7 +1033,6 @@ def forgot_password(request):
             return redirect('otp_verify',user.id)
            
     return render(request,'forgot_password.html')
-
 
 
 
@@ -1060,17 +1068,19 @@ def password_reset(request,id):
 
 
 
-
+@login_required
 def add_recep(request,id):
     main = CustomUser.objects.get(id=id)
     context = {'main':main}
     return render(request,'add_recep.html',context)
 
+@login_required
 def add_doctor(request,id):
     main = CustomUser.objects.get(id=id)
     context = {'main':main}
     return render(request,'add_doctor.html',context)
 
+@login_required
 def add_patient(request,id):
     main = CustomUser.objects.get(id=id)
     context = {'main':main}
@@ -1078,7 +1088,7 @@ def add_patient(request,id):
     
 
 
-
+@login_required
 def approve_user(request, id):
     try:
         main = CustomUser.objects.get(id=id)
@@ -1089,6 +1099,7 @@ def approve_user(request, id):
         # Handle the case where the user does not exist
         return redirect('admin_home')
 
+@login_required
 def remove_user(request, id):
     try:
         main = CustomUser.objects.get(id=id)
@@ -1100,13 +1111,15 @@ def remove_user(request, id):
 
 
 
-
+@login_required
 def payment_page(request):
     # Example: Retrieve patient information from the database
     patients = Patient.objects.all()  # Replace `Patient` with your actual model name
 
     return render(request, 'payment.html', {'patients': patients})
 
+
+@login_required
 def process_payment(request):
     if request.method == 'POST':
         # Perform payment processing logic here

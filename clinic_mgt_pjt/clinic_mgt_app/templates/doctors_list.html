@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,7 +36,8 @@
             margin-top: 20px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
@@ -85,6 +87,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -108,21 +111,22 @@
             </thead>
             <tbody>
                 {% for doctor in doctors %}
-                    <tr>
-                        <td>{{ doctor.id }}</td>
-                        <td>{{ doctor.first_name }}{{ doctor.last_name }}</td>
-                        <td>{{ doctor.phone_number }}</td>
-                        <td>{{ doctor.specialization }}</td>
-                        <td>
-                            <form method="POST" action="{% url 'delete_doctor' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
-                                <button type="submit" name="delete_doctor" class="delete-button">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ doctor.first_name }} {{ doctor.last_name }}</td>
+                    <td>{{ doctor.phone_number }}</td>
+                    <td>{{ doctor.specialization }}</td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_doctor' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                            <button type="submit" name="delete_doctor" class="delete-button">Delete</button>
+                        </form>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
+
         </table>
 
         <div class="table-footer">
@@ -131,4 +135,5 @@
     </div>
 
 </body>
+
 </html>

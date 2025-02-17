@@ -99,7 +99,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Id</th>
+                    <th>#</th>
                     <th>Receptionist Name</th>
                     <th>Phone Number</th>
                     <th>Clinic Name</th>
@@ -109,7 +109,7 @@
             <tbody>
                 {% for receptionist in receptionists %}
                     <tr>
-                        <td>{{ receptionist.id }}</td>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ receptionist.name }} </td>
                         <td>{{ receptionist.contact_number }}</td>
                         <td>{{ receptionist.clinic_name }}</td>
