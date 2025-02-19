@@ -85,7 +85,7 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">Dashboard</a>
+        <a class="navbar-brand" href="{% url 'recep_home' %}">Dashboard</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -102,12 +102,16 @@
                     <a class="nav-link" href="{% url 'schedule_create' %}">Create Schedule</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="{% url 'schedule_list' %}">Schedule List</a>
-                </li>
-
-                <li class="nav-item active">
                     <a class="nav-link" href="{% url 'create_test' %}">Test create</a>
                 </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'schedule_list' %}">Schedule List</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'test_list' %}">Test List</a>
+                </li>
+
+                
                 <li class="nav-item active">
                     <a class="nav-link" href="{% url 'register' %}">Patient Register</a>
                 </li>

@@ -17,6 +17,7 @@ from operator import attrgetter
 import random
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
+
     
 
 
@@ -360,6 +361,21 @@ def pharmacist_detail(request, pk):
     pharmacist = get_object_or_404(Pharmacistprofile, pk=pk)
     return render(request, 'pharmacist_profile.html', {'pharmacist': pharmacist})
 
+def edit_pharmacist(request, pk):
+    pharmacist = get_object_or_404(Pharmacistprofile, pk=pk)
+
+    if request.method == 'POST':
+        pharmacist.name = request.POST.get('name')
+        pharmacist.contact_number = request.POST.get('contact_number')
+        pharmacist.address = request.POST.get('address')
+        pharmacist.pharmacy_name = request.POST.get('pharmacy_name')
+        pharmacist.emergency_contact = request.POST.get('emergency_contact')
+        pharmacist.save()
+
+        return redirect('pharmacist_detail', pk=pharmacist.pk)
+
+    return render(request, 'pharmacist_edit.html', {'pharmacist': pharmacist})
+
 
 
 
@@ -547,7 +563,7 @@ def schedule_create(request):
                     status=400
                 )
 
-        return redirect('schedule_list')
+        return redirect('recep_home')
 
     # Passing choices and doctors to the template
     doctors = Doctor.objects.all()
@@ -946,6 +962,11 @@ def medicine_list(request):
     medicines = Medicine.objects.all()
     return render(request, 'medicine_list.html', {'medicines': medicines})
 
+def delete_medicine(request, id):
+    medicine = get_object_or_404(Medicine, id=id)
+    medicine.delete()
+    return redirect('medicine_list')  # Make sure 'medicine_list' is the correct URL name
+
 
 
 
@@ -1005,6 +1026,16 @@ def create_test(request):
 def test_detail(request, test_id):
     test = get_object_or_404(Test, id=test_id)
     return render(request, 'test_detail.html', {'test': test})
+
+
+def test_list(request):
+    tests = Test.objects.all()
+    return render(request, 'test_list.html', {'tests': tests})
+
+def delete_test(request, test_id):
+    test = get_object_or_404(Test, id=test_id)
+    test.delete()
+    return redirect('test_list')
 
 
 

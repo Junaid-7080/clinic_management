@@ -1,6 +1,8 @@
 from django.urls import path
 from .import views
 
+
+
 urlpatterns =[
     path('register', views.register, name='register'),
     path('login/',views.user_login,name='login'),
@@ -67,12 +69,16 @@ urlpatterns =[
     
     path('medicine/create/', views.create_medicine, name='create_medicine'),
     path('medicine/list/', views.medicine_list, name='medicine_list'),
+    path('medicine/delete/<int:id>/', views.delete_medicine, name='delete_medicine'),
+    
     path('medicine/dose/create/', views.create_dose_medicin, name='create_dose_medicin'),
     path('medicine/<int:medicine_id>/', views.medicine_detail, name='medicine_detail'),
     path('medicine/<int:medicine_id>/create_dose/', views.create_dose, name='create_dose'),
     
     path('test/create/', views.create_test, name='create_test'),
     path('test/<int:test_id>/', views.test_detail, name='test_detail'),
+    path('tests/', views.test_list, name='test_list'),
+    path('test/<int:test_id>/delete/', views.delete_test, name='delete_test'),
 
 
     path('forgotpassword/',views.forgot_password,name='forgot_password'),
@@ -82,6 +88,7 @@ urlpatterns =[
     path('pharmacist_home',views.pharmacist_home,name='pharmacist_home'),
     path('Pharmacist_create/',views.Pharmacist_create,name='Pharmacist_create'),
     path('pharmacist/<int:pk>/', views.pharmacist_detail, name='pharmacist_detail'),
+    path('pharmacist/edit/<int:pk>/', views.edit_pharmacist, name='pharmacist_edit'),
 
 
     path('appointments/patient/<int:pk>/', views.patient_appointments, name='patient_appointments'),

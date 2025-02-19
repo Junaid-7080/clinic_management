@@ -1,3 +1,5 @@
+{% extends 'pharmacist_base.html' %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,10 +61,13 @@
                     <span>Emergency Contact:</span> {{ pharmacist.emergency_contact }}
                 </div>
             </div>
-            <a href="{% url 'pharmacist_list' %}" class="btn btn-secondary btn-back">Back to List</a>
+            <a href="{% url 'pharmacist_edit' pk=pharmacist.pk %}" class="btn btn-primary btn-back">Edit Profile</a>
+
+            
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+{% endblock content %}

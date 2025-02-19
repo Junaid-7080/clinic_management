@@ -1,2 +1,43 @@
-<h2>Test: {{ test.name }}</h2>
-<p>Cost: {{ test.cost }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa; /* Light gray background */
+        }
+        .test-card {
+            max-width: 450px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            background: linear-gradient(to bottom, #ffffff, #f1f1f1);
+            border-left: 5px solid #007bff; /* Left border highlight */
+            text-align: center;
+        }
+        h2 {
+            font-weight: 600;
+        }
+        .cost {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #28a745; /* Green for cost */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="test-card shadow-lg">
+        <h2 class="text-primary">{{ test.name }}</h2>
+        <p class="cost">Cost: {{ test.cost }}</p>
+        <a href="{% url 'recep_home' %}" class="btn btn-primary mt-3">Home</a>
+    </div>
+</div>
+
+</body>
+</html>
+
